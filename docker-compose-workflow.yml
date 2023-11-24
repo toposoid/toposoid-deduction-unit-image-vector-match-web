@@ -158,7 +158,7 @@ services:
       app_net:
         ipv4_address: 172.30.0.11
     ports:
-      - 9011:9011
+      - 9020:9011
     depends_on:
       - sentence-weaviate
   sentence-weaviate:
@@ -197,7 +197,7 @@ services:
       app_net:
         ipv4_address: 172.30.0.13
     ports:
-      - 9011:9011
+      - 9021:9011
     depends_on:
       - image-weaviate
 
