@@ -43,7 +43,7 @@ services:
     image: toposoid/scala-data-accessor-neo4j-web:0.5-SNAPSHOT-workflow
     environment:
       - GRAPHDB_HOST=172.30.0.2
-      - PRIVATE_IP_ADDRESS=192.168.33.10
+      - PRIVATE_IP_ADDRESS=172.30.0.3
       - PLAY_HTTP_PORT=9005
     networks:
       app_net:
