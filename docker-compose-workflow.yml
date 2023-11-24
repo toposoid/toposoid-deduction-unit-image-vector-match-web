@@ -53,7 +53,7 @@ services:
   toposoid-sentence-parser-japanese-web:
     image: toposoid/toposoid-sentence-parser-japanese-web:0.5-SNAPSHOT-workflow
     environment:
-      - PRIVATE_IP_ADDRESS=192.168.33.10
+      - PRIVATE_IP_ADDRESS=172.30.0.4
       - PLAY_HTTP_PORT=9001
     networks:
       app_net:
@@ -63,7 +63,7 @@ services:
   toposoid-common-nlp-japanese-web:
     image: toposoid/toposoid-common-nlp-japanese-web:0.5-SNAPSHOT-workflow
     environment:
-      - PRIVATE_IP_ADDRESS=192.168.33.10
+      - PRIVATE_IP_ADDRESS=172.30.0.5
       - SYNONYM_NOUN_SIMILARITY_THRESHHOLD_JP=0.52
       - SYNONYM_VERB_SIMILARITY_THRESHHOLD_JP=0.52
       - WORD2VEC_SIMILARITY_THRESHHOLD_JP=0.68
@@ -78,7 +78,7 @@ services:
   toposoid-sentence-parser-english-web:
     image: toposoid/toposoid-sentence-parser-english-web:0.5-SNAPSHOT
     environment:
-      - PRIVATE_IP_ADDRESS=192.168.33.10
+      - PRIVATE_IP_ADDRESS=172.30.0.6
       - PLAY_HTTP_PORT=9007
       - CORENLP_HOST=172.30.0.8
     networks:
@@ -89,7 +89,7 @@ services:
   toposoid-common-nlp-english-web:
     image: toposoid/toposoid-common-nlp-english-web:0.5-SNAPSHOT
     environment:
-      - PRIVATE_IP_ADDRESS=192.168.33.10
+      - PRIVATE_IP_ADDRESS=172.30.0.7
       - SYNONYM_NOUN_SIMILARITY_THRESHHOLD_EN=0.52
       - SYNONYM_VERB_SIMILARITY_THRESHHOLD_EN=0.52
       - WORD2VEC_SIMILARITY_THRESHHOLD_EN=0.78
