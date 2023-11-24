@@ -1,0 +1,161 @@
+version: '3'
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.30.0.0/24
+
+services:
+  toposoid-deduction-unit-image-vector-match-web:
+    image: toposoid/toposoid-deduction-unit-image-vector-match-web:0.5-SNAPSHOT
+    environment:
+      - GRAPHDB_HOST=172.30.0.2
+      - PRIVATE_IP_ADDRESS=localhost
+      - SCALA_DATA_ACCESSOR_NEO4J_WEB_HOST=172.30.0.3
+      - TOPOSOID_COMMON_NLP_JP_WEB_HOST=172.30.0.5
+      - TOPOSOID_COMMON_NLP_JP_WEB_PORT=9006
+      - TOPOSOID_COMMON_NLP_EN_WEB_HOST=172.30.0.7
+      - TOPOSOID_COMMON_NLP_EN_WEB_PORT=9008
+      - TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST=172.30.0.9
+      - TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT=9011
+      - TOPOSOID_SENTENCE_VECTORDB_SEARCH_NUM_MAX=5
+      - PLAY_HTTP_PORT=9103
+    networks:
+      app_net:
+        ipv4_address: 172.30.0.4
+    ports:
+      - 9103:9103
+    depends_on:
+      - neo4j
+      - toposoid-common-nlp-japanese-web
+      - toposoid-common-nlp-english-web
+  toposoid-common-nlp-japanese-web:
+    image: toposoid/toposoid-common-nlp-japanese-web:0.5-SNAPSHOT
+    environment:
+      - PRIVATE_IP_ADDRESS=172.30.0.5
+      - SYNONYM_NOUN_SIMILARITY_THRESHHOLD_JP=0.52
+      - SYNONYM_VERB_SIMILARITY_THRESHHOLD_JP=0.52
+      - WORD2VEC_SIMILARITY_THRESHHOLD_JP=0.68
+      - CHIVE_MODEL_VERSION=chive-1.2-mc15.kv
+      - TOPOSOID_SENTENCEBERT_MODEL_JP=sentence-transformers/paraphrase-multilingual-mpnet-base-v2
+      - PLAY_HTTP_PORT=9006
+    networks:
+      app_net:
+        ipv4_address: 172.30.0.5
+    ports:
+      - 9006:9006
+  toposoid-common-nlp-english-web:
+    image: toposoid/toposoid-common-nlp-english-web:0.5-SNAPSHOT
+    environment:
+      - PRIVATE_IP_ADDRESS=172.30.0.7
+      - SYNONYM_NOUN_SIMILARITY_THRESHHOLD_EN=0.52
+      - SYNONYM_VERB_SIMILARITY_THRESHHOLD_EN=0.52
+      - WORD2VEC_SIMILARITY_THRESHHOLD_EN=0.78
+      - TOPOSOID_SENTENCEBERT_MODEL_EN=sentence-transformers/paraphrase-multilingual-mpnet-base-v2
+      - PLAY_HTTP_PORT=9008
+    networks:
+      app_net:
+        ipv4_address: 172.30.0.7
+    ports:
+      - 9008:9008
+  scala-data-accessor-neo4j-web:
+    image: toposoid/scala-data-accessor-neo4j-web:0.5-SNAPSHOT
+    environment:
+      - GRAPHDB_HOST=172.30.0.2
+      - PRIVATE_IP_ADDRESS=172.30.0.3
+      - PLAY_HTTP_PORT=9005
+    networks:
+      app_net:
+        ipv4_address: 172.30.0.3
+    ports:
+      - 9005:9005
+    depends_on:
+      - neo4j
+  neo4j:
+    image: neo4j:4.4.23
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,algo.*
+      - NEO4J_dbms_memory_heap_initial__size=512m
+      - NEO4J_dbms_memory_heap_max__size=2G
+      - NEO4J_dbms_transaction_timeout=10s
+      - NEO4J_apoc_uuid_enabled=true
+      - NEO4J_dbms_default__listen__address=0.0.0.0
+      - NEO4J_dbms_allow__upgrade=true
+      - NEO4J_dbms_default__database=neo4j
+      - NEO4J_AUTH=neo4j/p@ssw0rd
+    networks:
+      app_net:
+        ipv4_address: 172.30.0.2
+  #data-accessor-vald-web:
+  #  image: toposoid/data-accessor-vald-web:0.5-SNAPSHOT
+  #  environment:
+  #    - TOPOSOID_VALD_HOST=172.30.0.10
+  #    - TOPOSOID_VALD_PORT=8081
+  #    - TOPOSOID_VALD_DISTANCE_THRESHOLD=0.25 #For Multilingual Model 0.03
+  #  networks:
+  #    app_net:
+  #      ipv4_address: 172.30.0.9
+  #  ports:
+  #    - 9010:9010
+  #  depends_on:
+  #    - vald
+  #vald:
+  #  image: vdaas/vald-agent-ngt:v1.7.6
+  #  user: 1000:1000
+  #  volumes:
+  #    - ./vald-config:/etc/server
+  #    - /etc/passwd:/etc/passwd:ro
+  #    - /etc/group:/etc/group:ro
+  #  networks:
+  #    app_net:
+  #      ipv4_address: 172.30.0.10
+  #  ports:
+  #    - 8081:8081
+  data-accessor-weaviate-web:
+    image: toposoid/data-accessor-weaviate-web:0.5-SNAPSHOT
+    environment:
+      - TOPOSOID_WEAVIATE_HOST=172.30.0.10
+      - TOPOSOID_WEAVIATE_PORT=8080
+      - TOPOSOID_WEAVIATE_SIMILARITY_THRESHOLD=0.87
+    networks:
+      app_net:
+        ipv4_address: 172.30.0.9
+    ports:
+      - 9011:9011
+    depends_on:
+      - weaviate
+  weaviate:
+    command:
+      - --host
+      - 0.0.0.0
+      - --port
+      - '8080'
+      - --scheme
+      - http
+    image: semitechnologies/weaviate:1.21.2
+    ports:
+      - 8080:8080
+    networks:
+      app_net:
+        ipv4_address: 172.30.0.10
+    #volumes:
+    #  - /var/weaviate:/var/lib/weaviate
+    restart: on-failure:0
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'text2vec-huggingface'
+      HUGGINGFACE_APIKEY: ''
+      ENABLE_MODULES: 'text2vec-cohere,text2vec-huggingface,text2vec-palm,text2vec-openai,generative-openai,generative-cohere,generative-palm,ref2vec-centroid,reranker-cohere,qna-openai'
+      CLUSTER_HOSTNAME: 'node1'
+
+
+
