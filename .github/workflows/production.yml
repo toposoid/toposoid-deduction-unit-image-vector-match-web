@@ -31,7 +31,7 @@ jobs:
             docker system prune -f
             docker volume prune -f
             docker build --build-arg TARGET_BRANCH=${{ env.PJ_BRANCH }} --tag ${{ env.PJ_REPO }}:${{ env.PJ_VERSION }} -f Dockerfile-workflow .
-            docker-compose -f docker-compose-workflow.yml up -d toposoid-deduction-unit-sentence-vector-match-web
+            docker-compose -f docker-compose-workflow.yml up -d toposoid-deduction-unit-image-vector-match-web
             docker-compose -f docker-compose-workflow.yml exec -T ${{ env.PJ_REPO }} bash -c "cd ${{ env.PJ_REPO }} && sbt headerCheck"
             docker-compose -f docker-compose-workflow.yml exec -T ${{ env.PJ_REPO }} bash -c "cd ${{ env.PJ_REPO }} && sbt test:headerCheck"
             docker-compose -f docker-compose-workflow.yml exec -T ${{ env.PJ_REPO }} bash -c "cd ${{ env.PJ_REPO }} && sbt compile"
