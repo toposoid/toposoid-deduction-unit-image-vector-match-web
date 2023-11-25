@@ -69,13 +69,13 @@ class HomeControllerSpecEnglish4 extends PlaySpec with BeforeAndAfter with Befor
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
   val imageBoxInfoB = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
 
-  val sentenceC = "A truck is parked."
-  val referenceC = Reference(url = "", surface = "truck", surfaceIndex = 1, isWholeSentence = false,
+  val sentenceC = "A large truck is parked."
+  val referenceC = Reference(url = "", surface = "truck", surfaceIndex = 2, isWholeSentence = false,
     originalUrlOrReference = "https://farm8.staticflickr.com/7103/7210629614_5a388d9a9c_z.jpg")
   val imageBoxInfoC = ImageBoxInfo(x = 23, y = 25, weight = 601, height = 341)
 
-  val sentenceD = "Two fighter jets are flying."
-  val referenceD = Reference(url = "", surface = "jets", surfaceIndex = 2, isWholeSentence = false,
+  val sentenceD = "Two jets are flying."
+  val referenceD = Reference(url = "", surface = "jets", surfaceIndex = 1, isWholeSentence = false,
     originalUrlOrReference = "https://farm2.staticflickr.com/1070/5110702674_350f5b367d_z.jpg")
   val imageBoxInfoD = ImageBoxInfo(x = 223, y = 108, weight = 140, height = 205)
 
@@ -89,8 +89,8 @@ class HomeControllerSpecEnglish4 extends PlaySpec with BeforeAndAfter with Befor
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
   val imageBoxInfoParaB = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
 
-  val paraphraseC = "Transport vehicle is parked."
-  val referenceParaC = Reference(url = "", surface = "vehicle", surfaceIndex = 1, isWholeSentence = false,
+  val paraphraseC = "A large vehicle is parked."
+  val referenceParaC = Reference(url = "", surface = "vehicle", surfaceIndex = 2, isWholeSentence = false,
     originalUrlOrReference = "https://farm8.staticflickr.com/7103/7210629614_5a388d9a9c_z.jpg")
   val imageBoxInfoParaC = ImageBoxInfo(x = 23, y = 25, weight = 601, height = 341)
 
