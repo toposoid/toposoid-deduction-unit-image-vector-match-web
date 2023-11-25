@@ -25,7 +25,7 @@ import com.ideal.linked.toposoid.protocol.model.base.AnalyzedSentenceObjects
 import com.ideal.linked.toposoid.protocol.model.parser.{InputSentenceForParser, KnowledgeForParser, KnowledgeSentenceSetForParser}
 import com.ideal.linked.toposoid.sentence.transformer.neo4j.Sentence2Neo4jTransformer
 import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
-import controllers.TestUtils.{addImageInfoToAnalyzedSentenceObjects, getImageInfo, getKnowledge, registSingleClaim}
+import controllers.TestUtils.{addImageInfoToAnalyzedSentenceObjects, getImageInfo, getKnowledge, getUUID, registSingleClaim}
 import io.jvm.uuid.UUID
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play.PlaySpec
@@ -103,8 +103,8 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
 
   "The specification11" should {
     "returns an appropriate response" in {
-      val propositionId1 = UUID.random.toString
-      val sentenceId1 = UUID.random.toString
+      val propositionId1 = getUUID()
+      val sentenceId1 = getUUID()
       //val knowledge1 = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA)
       //val knowledge2 = getKnowledge(lang=lang, sentence=sentenceB, reference=referenceB, imageBoxInfo=imageBoxInfoB)
       val knowledge3 = getKnowledge(lang=lang, sentence=sentenceC, reference=referenceC, imageBoxInfo=imageBoxInfoC)
@@ -114,9 +114,9 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
       val paraphrase3 = getKnowledge(lang=lang, sentence=paraphraseC, reference=referenceParaC, imageBoxInfo=imageBoxInfoParaC)
 
       registSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge3))
-      val propositionIdForInference = UUID.random.toString
-      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase1), KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase2))
-      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase3))
+      val propositionIdForInference = getUUID()
+      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2))
+      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase3))
       val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge)).toString()
       //val json = ToposoidUtils.callComponent(inputSentence, conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT"), "analyze")
       val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, List(getImageInfo(referenceParaA, imageBoxInfoParaA), getImageInfo(referenceParaB, imageBoxInfoParaB), getImageInfo(referenceParaC, imageBoxInfoParaC)))
@@ -136,9 +136,9 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
 
   "The specification12" should {
     "returns an appropriate response" in {
-      val propositionId1 = UUID.random.toString
-      val sentenceId1 = UUID.random.toString
-      val sentenceId2 = UUID.random.toString
+      val propositionId1 = getUUID()
+      val sentenceId1 = getUUID()
+      val sentenceId2 = getUUID()
       val knowledge1 = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA)
       //val knowledge2 = getKnowledge(lang=lang, sentence=sentenceB, reference=referenceB, imageBoxInfo=imageBoxInfoB)
       val knowledge3 = getKnowledge(lang=lang, sentence=sentenceC, reference=referenceC, imageBoxInfo=imageBoxInfoC)
@@ -155,9 +155,9 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
       FeatureVectorizer.createVector(knowledgeSentenceSetForParser)
       Thread.sleep(5000)
 
-      val propositionIdForInference = UUID.random.toString
-      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase1), KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase2))
-      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase3))
+      val propositionIdForInference = getUUID()
+      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2))
+      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase3))
       val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge)).toString()
       val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, List(getImageInfo(referenceParaA, imageBoxInfoParaA), getImageInfo(referenceParaB, imageBoxInfoParaB), getImageInfo(referenceParaC, imageBoxInfoParaC)))
       val fr = FakeRequest(POST, "/execute")
@@ -176,9 +176,9 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
 
   "The specification13" should {
     "returns an appropriate response" in {
-      val propositionId1 = UUID.random.toString
-      val sentenceId1 = UUID.random.toString
-      val sentenceId2 = UUID.random.toString
+      val propositionId1 = getUUID()
+      val sentenceId1 = getUUID()
+      val sentenceId2 = getUUID()
       //val knowledge1 = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA)
       val knowledge2 = getKnowledge(lang=lang, sentence=sentenceB, reference=referenceB, imageBoxInfo=imageBoxInfoB)
       val knowledge3 = getKnowledge(lang=lang, sentence=sentenceC, reference=referenceC, imageBoxInfo=imageBoxInfoC)
@@ -195,9 +195,9 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
       FeatureVectorizer.createVector(knowledgeSentenceSetForParser)
       Thread.sleep(5000)
 
-      val propositionIdForInference = UUID.random.toString
-      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase1), KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase2))
-      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase3))
+      val propositionIdForInference = getUUID()
+      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2))
+      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase3))
       val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge)).toString()
       val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, List(getImageInfo(referenceParaA, imageBoxInfoParaA), getImageInfo(referenceParaB, imageBoxInfoParaB), getImageInfo(referenceParaC, imageBoxInfoParaC)))
       val fr = FakeRequest(POST, "/execute")
@@ -216,10 +216,10 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
 
   "The specification14" should {
     "returns an appropriate response" in {
-      val propositionId1 = UUID.random.toString
-      val sentenceId1 = UUID.random.toString
-      val sentenceId2 = UUID.random.toString
-      val sentenceId3 = UUID.random.toString
+      val propositionId1 = getUUID()
+      val sentenceId1 = getUUID()
+      val sentenceId2 = getUUID()
+      val sentenceId3 = getUUID()
       val knowledge1 = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA)
       val knowledge2 = getKnowledge(lang=lang, sentence=sentenceB, reference=referenceB, imageBoxInfo=imageBoxInfoB)
       val knowledge3 = getKnowledge(lang=lang, sentence=sentenceC, reference=referenceC, imageBoxInfo=imageBoxInfoC)
@@ -236,9 +236,9 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
       FeatureVectorizer.createVector(knowledgeSentenceSetForParser)
       Thread.sleep(5000)
 
-      val propositionIdForInference = UUID.random.toString
-      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase1), KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase2))
-      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase3))
+      val propositionIdForInference = getUUID()
+      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2))
+      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase3))
       val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge)).toString()
       val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, List(getImageInfo(referenceParaA, imageBoxInfoParaA), getImageInfo(referenceParaB, imageBoxInfoParaB), getImageInfo(referenceParaC, imageBoxInfoParaC)))
 
@@ -258,12 +258,12 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
 
   "The specification15" should {
     "returns an appropriate response" in {
-      val propositionId1 = UUID.random.toString
-      val propositionId2 = UUID.random.toString
-      val sentenceId1 = UUID.random.toString
-      val sentenceId2 = UUID.random.toString
-      val sentenceId3 = UUID.random.toString
-      val sentenceId4 = UUID.random.toString
+      val propositionId1 = getUUID()
+      val propositionId2 = getUUID()
+      val sentenceId1 = getUUID()
+      val sentenceId2 = getUUID()
+      val sentenceId3 = getUUID()
+      val sentenceId4 = getUUID()
 
       val knowledge1 = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA)
       val knowledge2 = getKnowledge(lang=lang, sentence=sentenceB, reference=referenceB, imageBoxInfo=imageBoxInfoB)
@@ -283,9 +283,9 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
       FeatureVectorizer.createVector(knowledgeSentenceSetForParser)
       Thread.sleep(5000)
 
-      val propositionIdForInference = UUID.random.toString
-      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase1), KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase2))
-      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase3))
+      val propositionIdForInference = getUUID()
+      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2))
+      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase3))
       val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge)).toString()
       val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, List(getImageInfo(referenceParaA, imageBoxInfoParaA), getImageInfo(referenceParaB, imageBoxInfoParaB), getImageInfo(referenceParaC, imageBoxInfoParaC)))
       val fr = FakeRequest(POST, "/execute")
@@ -304,12 +304,12 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
 
   "The specification16" should {
     "returns an appropriate response" in {
-      val propositionId1 = UUID.random.toString
-      val propositionId2 = UUID.random.toString
-      val sentenceId1 = UUID.random.toString
-      val sentenceId2 = UUID.random.toString
-      val sentenceId3 = UUID.random.toString
-      val sentenceId4 = UUID.random.toString
+      val propositionId1 = getUUID()
+      val propositionId2 = getUUID()
+      val sentenceId1 = getUUID()
+      val sentenceId2 = getUUID()
+      val sentenceId3 = getUUID()
+      val sentenceId4 = getUUID()
       val knowledge1 = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA)
       val knowledge2 = getKnowledge(lang=lang, sentence=sentenceB, reference=referenceB, imageBoxInfo=imageBoxInfoB)
       val knowledge3 = getKnowledge(lang=lang, sentence=sentenceC, reference=referenceC, imageBoxInfo=imageBoxInfoC)
@@ -328,9 +328,9 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
       FeatureVectorizer.createVector(knowledgeSentenceSetForParser)
       Thread.sleep(5000)
 
-      val propositionIdForInference = UUID.random.toString
-      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase1), KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase2))
-      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase3))
+      val propositionIdForInference = getUUID()
+      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2))
+      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase3))
       val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge)).toString()
       val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, List(getImageInfo(referenceParaA, imageBoxInfoParaA), getImageInfo(referenceParaB, imageBoxInfoParaB), getImageInfo(referenceParaC, imageBoxInfoParaC)))
       val fr = FakeRequest(POST, "/execute")
@@ -349,14 +349,14 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
 
   "The specification17" should {
     "returns an appropriate response" in {
-      val propositionId1 = UUID.random.toString
-      val propositionId2 = UUID.random.toString
-      val propositionId3 = UUID.random.toString
-      val sentenceId1 = UUID.random.toString
-      val sentenceId2 = UUID.random.toString
-      val sentenceId3 = UUID.random.toString
-      val sentenceId4 = UUID.random.toString
-      val sentenceId5 = UUID.random.toString
+      val propositionId1 = getUUID()
+      val propositionId2 = getUUID()
+      val propositionId3 = getUUID()
+      val sentenceId1 = getUUID()
+      val sentenceId2 = getUUID()
+      val sentenceId3 = getUUID()
+      val sentenceId4 = getUUID()
+      val sentenceId5 = getUUID()
       val knowledge1 = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA)
       val knowledge2 = getKnowledge(lang=lang, sentence=sentenceB, reference=referenceB, imageBoxInfo=imageBoxInfoB)
       val knowledge3 = getKnowledge(lang=lang, sentence=sentenceC, reference=referenceC, imageBoxInfo=imageBoxInfoC)
@@ -377,9 +377,9 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
       FeatureVectorizer.createVector(knowledgeSentenceSetForParser)
       Thread.sleep(5000)
 
-      val propositionIdForInference = UUID.random.toString
-      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase1), KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase2))
-      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase3))
+      val propositionIdForInference = getUUID()
+      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2))
+      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase3))
       val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge)).toString()
       val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, List(getImageInfo(referenceParaA, imageBoxInfoParaA), getImageInfo(referenceParaB, imageBoxInfoParaB), getImageInfo(referenceParaC, imageBoxInfoParaC)))
       val fr = FakeRequest(POST, "/execute")
@@ -398,14 +398,14 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
 
   "The specification17A" should {
     "returns an appropriate response" in {
-      val propositionId1 = UUID.random.toString
-      val propositionId2 = UUID.random.toString
-      val propositionId3 = UUID.random.toString
-      val sentenceId1 = UUID.random.toString
-      val sentenceId2 = UUID.random.toString
-      val sentenceId3 = UUID.random.toString
-      val sentenceId4 = UUID.random.toString
-      val sentenceId5 = UUID.random.toString
+      val propositionId1 = getUUID()
+      val propositionId2 = getUUID()
+      val propositionId3 = getUUID()
+      val sentenceId1 = getUUID()
+      val sentenceId2 = getUUID()
+      val sentenceId3 = getUUID()
+      val sentenceId4 = getUUID()
+      val sentenceId5 = getUUID()
       val knowledge1 = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA)
       val knowledge2 = getKnowledge(lang=lang, sentence=sentenceB, reference=referenceB, imageBoxInfo=imageBoxInfoB)
       val knowledge3 = getKnowledge(lang=lang, sentence=sentenceC, reference=referenceC, imageBoxInfo=imageBoxInfoC)
@@ -417,9 +417,9 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
       registSingleClaim(KnowledgeForParser(propositionId2, sentenceId2, knowledge2))
       registSingleClaim(KnowledgeForParser(propositionId3, sentenceId3, knowledge3))
 
-      val propositionIdForInference = UUID.random.toString
-      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase1), KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase2))
-      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase3))
+      val propositionIdForInference = getUUID()
+      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2))
+      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase3))
       val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge)).toString()
       val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, List(getImageInfo(referenceParaA, imageBoxInfoParaA), getImageInfo(referenceParaB, imageBoxInfoParaB), getImageInfo(referenceParaC, imageBoxInfoParaC)))
       val fr = FakeRequest(POST, "/execute")
@@ -438,8 +438,8 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
 
   "The specification18" should {
     "returns an appropriate response" in {
-      val propositionId1 = UUID.random.toString
-      val sentenceId1 = UUID.random.toString
+      val propositionId1 = getUUID()
+      val sentenceId1 = getUUID()
       val knowledge1 = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA)
       //val knowledge2 = getKnowledge(lang=lang, sentence=sentenceB, reference=referenceB, imageBoxInfo=imageBoxInfoB)
       //val knowledge3 = getKnowledge(lang=lang, sentence=sentenceC, reference=referenceC, imageBoxInfo=imageBoxInfoC)
@@ -449,9 +449,9 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
 
       registSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1))
 
-      val propositionIdForInference = UUID.random.toString
-      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase1))
-      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase2), KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase3))
+      val propositionIdForInference = getUUID()
+      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1))
+      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase3))
       val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge)).toString()
       val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, List(getImageInfo(referenceParaA, imageBoxInfoParaA), getImageInfo(referenceParaB, imageBoxInfoParaB), getImageInfo(referenceParaC, imageBoxInfoParaC)))
       val fr = FakeRequest(POST, "/execute")
@@ -470,8 +470,8 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
 
   "The specification19" should {
     "returns an appropriate response" in {
-      val propositionId1 = UUID.random.toString
-      val sentenceId1 = UUID.random.toString
+      val propositionId1 = getUUID()
+      val sentenceId1 = getUUID()
       //val knowledge1 = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA)
       val knowledge2 = getKnowledge(lang=lang, sentence=sentenceB, reference=referenceB, imageBoxInfo=imageBoxInfoB)
       //val knowledge3 = getKnowledge(lang=lang, sentence=sentenceC, reference=referenceC, imageBoxInfo=imageBoxInfoC)
@@ -480,9 +480,9 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
       val paraphrase3 = getKnowledge(lang=lang, sentence=paraphraseC, reference=referenceParaC, imageBoxInfo=imageBoxInfoParaC)
       registSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge2))
 
-      val propositionIdForInference = UUID.random.toString
-      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase1))
-      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase2), KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase3))
+      val propositionIdForInference = getUUID()
+      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1))
+      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase3))
       val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge)).toString()
       val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, List(getImageInfo(referenceParaA, imageBoxInfoParaA), getImageInfo(referenceParaB, imageBoxInfoParaB), getImageInfo(referenceParaC, imageBoxInfoParaC)))
       val fr = FakeRequest(POST, "/execute")
@@ -501,8 +501,8 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
 
   "The specification20" should {
     "returns an appropriate response" in {
-      val propositionId1 = UUID.random.toString
-      val sentenceId1 = UUID.random.toString
+      val propositionId1 = getUUID()
+      val sentenceId1 = getUUID()
       //val knowledge1 = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA)
       //val knowledge2 = getKnowledge(lang=lang, sentence=sentenceB, reference=referenceB, imageBoxInfo=imageBoxInfoB)
       val knowledge3 = getKnowledge(lang=lang, sentence=sentenceC, reference=referenceC, imageBoxInfo=imageBoxInfoC)
@@ -513,9 +513,9 @@ class HomeControllerSpecEnglish2 extends PlaySpec with BeforeAndAfter with Befor
 
       registSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge3))
 
-      val propositionIdForInference = UUID.random.toString
-      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase1))
-      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase2), KnowledgeForParser(propositionIdForInference, UUID.random.toString, paraphrase3))
+      val propositionIdForInference = getUUID()
+      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1))
+      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase3))
       val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge)).toString()
       val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, List(getImageInfo(referenceParaA, imageBoxInfoParaA), getImageInfo(referenceParaB, imageBoxInfoParaB), getImageInfo(referenceParaC, imageBoxInfoParaC)))
       val fr = FakeRequest(POST, "/execute")

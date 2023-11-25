@@ -31,13 +31,26 @@ import io.jvm.uuid.UUID
 case class ImageBoxInfo(x:Int, y:Int, weight:Int, height:Int)
 
 object TestUtils {
+
+  var usedUuidList = List.empty[String]
+
+  def getUUID(): String = {
+    var uuid: String = UUID.random.toString
+    while (usedUuidList.filter(_.equals(uuid)).size > 0) {
+      uuid = UUID.random.toString
+    }
+    usedUuidList = usedUuidList :+ uuid
+    uuid
+  }
+
+
   def getKnowledge(lang:String, sentence: String, reference: Reference, imageBoxInfo: ImageBoxInfo): Knowledge = {
     Knowledge(sentence, lang, "{}", false, List(getImageInfo(reference, imageBoxInfo)))
   }
 
   def getImageInfo(reference: Reference, imageBoxInfo: ImageBoxInfo): KnowledgeForImage = {
     val imageReference = ImageReference(reference: Reference, imageBoxInfo.x, imageBoxInfo.y, imageBoxInfo.weight, imageBoxInfo.height)
-    val knowledgeForImage = KnowledgeForImage(id = UUID.random.toString, imageReference = imageReference)
+    val knowledgeForImage = KnowledgeForImage(id = getUUID(), imageReference = imageReference)
     val registContentResultJson = ToposoidUtils.callComponent(
       Json.toJson(knowledgeForImage).toString(),
       conf.getString("TOPOSOID_CONTENTS_ADMIN_HOST"),
