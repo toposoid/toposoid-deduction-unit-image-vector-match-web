@@ -90,7 +90,7 @@ object TestUtils {
                 acc3 :+ KnowledgeFeatureReference(
                   propositionId = y._2.propositionId,
                   sentenceId = y._2.sentenceId,
-                  featureId = UUID.random.toString,
+                  featureId = getUUID(),
                   featureType = IMAGE.index,
                   url = z.imageReference.reference.url,
                   source = z.imageReference.reference.originalUrlOrReference,
