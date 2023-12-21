@@ -21,7 +21,7 @@ import com.ideal.linked.toposoid.deduction.common.DeductionUnitController
 import com.ideal.linked.toposoid.deduction.common.FacadeForAccessNeo4J.getCypherQueryResult
 import com.ideal.linked.toposoid.knowledgebase.model.{KnowledgeBaseEdge, KnowledgeBaseNode}
 import com.ideal.linked.toposoid.protocol.model.base.{AnalyzedSentenceObject, AnalyzedSentenceObjects, CoveredPropositionEdge, CoveredPropositionNode, KnowledgeBaseSideInfo, MatchedFeatureInfo}
-import com.ideal.linked.toposoid.protocol.model.neo4j.{Neo4jRecordMap, Neo4jRecords}
+import com.ideal.linked.toposoid.protocol.model.neo4j.{Neo4jRecords}
 import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
 import com.ideal.linked.common.DeploymentConverter.conf
 import com.ideal.linked.toposoid.knowledgebase.featurevector.model.{FeatureVectorSearchResult, SingleFeatureVectorForSearch}
@@ -47,7 +47,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       //Check if the image exists on asos here　or not.
       if (getAnalyzedSentenceObjectsWithImage(asos).size > 0) {
         val result: List[AnalyzedSentenceObject] = asos.foldLeft(List.empty[AnalyzedSentenceObject]) {
-          (acc, x) => acc :+ analyze(x, acc, "image-vector-match")
+          (acc, x) => acc :+ analyze(x, acc, "image-vector-match", List(IMAGE.index))
         }
         Ok(Json.toJson(AnalyzedSentenceObjects(result))).as(JSON)
       }else{
@@ -163,7 +163,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       (acc, x) => {
         val knowledgeBaseSideInfo = x.head.value.featureNode match {
           case Some(y) => {
-            KnowledgeBaseSideInfo(y.propositionId, y.sentenceId, List(MatchedFeatureInfo(y.sentenceId, 1)))
+            KnowledgeBaseSideInfo(y.propositionId, y.sentenceId, List(MatchedFeatureInfo(y.featureId, 1)))
           }
           case _ => {
             KnowledgeBaseSideInfo(x.head.value.localNode.get.propositionId, x.head.value.localNode.get.sentenceId, List(MatchedFeatureInfo(x.head.value.localNode.get.sentenceId, 1)))
