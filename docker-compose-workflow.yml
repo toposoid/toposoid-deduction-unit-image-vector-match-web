@@ -33,12 +33,12 @@ services:
       - TOPOSOID_COMMON_IMAGE_RECOGNITION_PORT=9013
       - TOPOSOID_CONTENTS_ADMIN_HOST=172.30.0.9
       - TOPOSOID_CONTENTS_ADMIN_PORT=9012
-      - PLAY_HTTP_PORT=9103
+      - PLAY_HTTP_PORT=9104
     networks:
       app_net:
         ipv4_address: 172.30.0.15
     ports:
-      - 9103:9103
+      - 9104:9104
   scala-data-accessor-neo4j-web:
     image: toposoid/scala-data-accessor-neo4j-web:0.5-SNAPSHOT-workflow
     environment:
