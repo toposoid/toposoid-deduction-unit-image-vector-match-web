@@ -9,12 +9,12 @@ networks:
 
 services:
   toposoid-deduction-unit-image-vector-match-web:
-    image: toposoid-deduction-unit-image-vector-match-web:0.5-SNAPSHOT
+    image: toposoid-deduction-unit-image-vector-match-web:0.5-SNAPSHOT-lowspec
     tty: true
     environment:
-      - GRAPHDB_HOST=172.30.0.2
       - PRIVATE_IP_ADDRESS=172.30.0.15
-      - SCALA_DATA_ACCESSOR_NEO4J_WEB_HOST=172.30.0.3
+      - TOPOSOID_GRAPHDB_HOST=172.30.0.2
+      - TOPOSOID_GRAPHDB_WEB_HOST=172.30.0.3
       - TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST=172.30.0.4
       - TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT=9001
       - TOPOSOID_SENTENCE_PARSER_EN_WEB_HOST=172.30.0.6
@@ -40,10 +40,10 @@ services:
     ports:
       - 9104:9104
   scala-data-accessor-neo4j-web:
-    image: toposoid/scala-data-accessor-neo4j-web:0.5-SNAPSHOT-workflow
+    image: toposoid/scala-data-accessor-neo4j-web:0.5-SNAPSHOT-lowspec
     environment:
-      - GRAPHDB_HOST=172.30.0.2
       - PRIVATE_IP_ADDRESS=172.30.0.3
+      - TOPOSOID_GRAPHDB_HOST=172.30.0.2
       - PLAY_HTTP_PORT=9005
     networks:
       app_net:
@@ -51,7 +51,7 @@ services:
     ports:
       - 9005:9005
   toposoid-sentence-parser-japanese-web:
-    image: toposoid/toposoid-sentence-parser-japanese-web:0.5-SNAPSHOT-workflow
+    image: toposoid/toposoid-sentence-parser-japanese-web:0.5-SNAPSHOT-lowspec
     environment:
       - PRIVATE_IP_ADDRESS=172.30.0.4
       - PLAY_HTTP_PORT=9001
@@ -61,14 +61,15 @@ services:
     ports:
       - 9001:9001
   toposoid-common-nlp-japanese-web:
-    image: toposoid/toposoid-common-nlp-japanese-web:0.5-SNAPSHOT-workflow
+    image: toposoid/toposoid-common-nlp-japanese-web:0.5-SNAPSHOT-lowspec
     environment:
       - PRIVATE_IP_ADDRESS=172.30.0.5
-      - SYNONYM_NOUN_SIMILARITY_THRESHHOLD_JP=0.52
-      - SYNONYM_VERB_SIMILARITY_THRESHHOLD_JP=0.52
-      - WORD2VEC_SIMILARITY_THRESHHOLD_JP=0.68
-      - CHIVE_MODEL_VERSION=chive-1.2-mc90.kv
-      - TOPOSOID_SENTENCEBERT_MODEL_JP=sentence-transformers/paraphrase-multilingual-mpnet-base-v2
+      - TOPOSOID_SYNONYM_NOUN_SIMILARITY_THRESHHOLD_JP=0.52
+      - TOPOSOID_SYNONYM_VERB_SIMILARITY_THRESHHOLD_JP=0.52
+      - TOPOSOID_WORD2VEC_SIMILARITY_THRESHHOLD_JP=0.68
+      - TOPOSOID_CHIVE_MODEL_VERSION=chive-1.2-mc90.kv
+      - TOPOSOID_SENTENCEBERT_MODEL_JP=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      - SENTENCE_TRANSFORMERS_HOME=./models
       - PLAY_HTTP_PORT=9006
     networks:
       app_net:
@@ -76,24 +77,26 @@ services:
     ports:
       - 9006:9006
   toposoid-sentence-parser-english-web:
-    image: toposoid/toposoid-sentence-parser-english-web:0.5-SNAPSHOT
+    image: toposoid/toposoid-sentence-parser-english-web:0.5-SNAPSHOT-lowspec
     environment:
       - PRIVATE_IP_ADDRESS=172.30.0.6
       - PLAY_HTTP_PORT=9007
-      - CORENLP_HOST=172.30.0.8
+      - TOPOSOID_CORENLP_HOST=172.30.0.8
     networks:
       app_net:
         ipv4_address: 172.30.0.6
     ports:
       - 9007:9007
   toposoid-common-nlp-english-web:
-    image: toposoid/toposoid-common-nlp-english-web:0.5-SNAPSHOT
+    image: toposoid/toposoid-common-nlp-english-web:0.5-SNAPSHOT-lowspec
     environment:
       - PRIVATE_IP_ADDRESS=172.30.0.7
-      - SYNONYM_NOUN_SIMILARITY_THRESHHOLD_EN=0.52
-      - SYNONYM_VERB_SIMILARITY_THRESHHOLD_EN=0.52
-      - WORD2VEC_SIMILARITY_THRESHHOLD_EN=0.78
-      - TOPOSOID_SENTENCEBERT_MODEL_EN=sentence-transformers/paraphrase-multilingual-mpnet-base-v2
+      - TOPOSOID_SYNONYM_NOUN_SIMILARITY_THRESHHOLD_EN=0.52
+      - TOPOSOID_SYNONYM_VERB_SIMILARITY_THRESHHOLD_EN=0.52
+      - TOPOSOID_WORD2VEC_SIMILARITY_THRESHHOLD_EN=0.78
+      - TOPOSOID_SPACY_MODEL_EN=en_core_web_md
+      - TOPOSOID_SENTENCEBERT_MODEL_EN=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      - SENTENCE_TRANSFORMERS_HOME=./models
       - PLAY_HTTP_PORT=9008
     networks:
       app_net:
@@ -139,9 +142,11 @@ services:
       - 9012:9012
 
   toposoid-common-image-recognition-web:
-    image: toposoid/toposoid-common-image-recognition-web:0.5-SNAPSHOT
+    image: toposoid/toposoid-common-image-recognition-web:0.5-SNAPSHOT-lowspec
     environment:
-      - TOPOSOID_IMAGE_RECOGNITION_MODEL=google/vit-base-patch16-224
+      - TOPOSOID_IMAGE_RECOGNITION_VIT_MODEL=google/vit-base-patch16-224
+      - TOPOSOID_IMAGE_RECOGNITION_MOBILE_VIT_MODEL=apple/mobilevit-small
+      - TOPOSOID_IMAGE_RECOGNITION_MOBILE_VIT_USE=1
     networks:
       app_net:
         ipv4_address: 172.30.0.10
