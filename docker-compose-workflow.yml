@@ -9,7 +9,7 @@ networks:
 
 services:
   toposoid-deduction-unit-image-vector-match-web:
-    image: toposoid-deduction-unit-image-vector-match-web:0.5-SNAPSHOT-lowspec
+    image: toposoid-deduction-unit-image-vector-match-web:0.5-SNAPSHOT
     tty: true
     environment:
       - PRIVATE_IP_ADDRESS=172.30.0.15
