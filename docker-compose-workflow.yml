@@ -1,69 +1,52 @@
 version: '3'
-networks:
-  app_net:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.30.0.0/24
-
 services:
   toposoid-deduction-unit-image-vector-match-web:
     image: toposoid-deduction-unit-image-vector-match-web:0.5-SNAPSHOT
     tty: true
     environment:
-      - PRIVATE_IP_ADDRESS=172.30.0.15
-      - TOPOSOID_GRAPHDB_HOST=172.30.0.2
-      - TOPOSOID_GRAPHDB_WEB_HOST=172.30.0.3
-      - TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST=172.30.0.4
+      - PRIVATE_IP_ADDRESS=toposoid-deduction-unit-image-vector-match-web
+      - TOPOSOID_GRAPHDB_HOST=neo4j
+      - TOPOSOID_GRAPHDB_WEB_HOST=scala-data-accessor-neo4j-web
+      - TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST=toposoid-sentence-parser-japanese-web
       - TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT=9001
-      - TOPOSOID_SENTENCE_PARSER_EN_WEB_HOST=172.30.0.6
+      - TOPOSOID_SENTENCE_PARSER_EN_WEB_HOST=toposoid-sentence-parser-english-web
       - TOPOSOID_SENTENCE_PARSER_EN_WEB_PORT=9007
-      - TOPOSOID_COMMON_NLP_JP_WEB_HOST=172.30.0.5
+      - TOPOSOID_COMMON_NLP_JP_WEB_HOST=toposoid-common-nlp-japanese-web
       - TOPOSOID_COMMON_NLP_JP_WEB_PORT=9006
-      - TOPOSOID_COMMON_NLP_EN_WEB_HOST=172.30.0.7
+      - TOPOSOID_COMMON_NLP_EN_WEB_HOST=toposoid-common-nlp-english-web
       - TOPOSOID_COMMON_NLP_EN_WEB_PORT=9008
-      - TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST=172.30.0.11
+      - TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST=data-accessor-sentence-weaviate-web
       - TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT=9011
       - TOPOSOID_SENTENCE_VECTORDB_SEARCH_NUM_MAX=5
-      - TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST=172.30.0.13
+      - TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST=data-accessor-image-weaviate-web
       - TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT=9011
       - TOPOSOID_IMAGE_VECTORDB_SEARCH_NUM_MAX=5
-      - TOPOSOID_COMMON_IMAGE_RECOGNITION_HOST=172.30.0.10
+      - TOPOSOID_COMMON_IMAGE_RECOGNITION_HOST=toposoid-common-image-recognition-web
       - TOPOSOID_COMMON_IMAGE_RECOGNITION_PORT=9013
-      - TOPOSOID_CONTENTS_ADMIN_HOST=172.30.0.9
+      - TOPOSOID_CONTENTS_ADMIN_HOST=toposoid-contents-admin-web
       - TOPOSOID_CONTENTS_ADMIN_PORT=9012
       - PLAY_HTTP_PORT=9104
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.15
     ports:
       - 9104:9104
   scala-data-accessor-neo4j-web:
     image: toposoid/scala-data-accessor-neo4j-web:0.5-SNAPSHOT-lowspec
     environment:
-      - PRIVATE_IP_ADDRESS=172.30.0.3
-      - TOPOSOID_GRAPHDB_HOST=172.30.0.2
+      - PRIVATE_IP_ADDRESS=scala-data-accessor-neo4j-web
+      - TOPOSOID_GRAPHDB_HOST=neo4j
       - PLAY_HTTP_PORT=9005
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.3
     ports:
       - 9005:9005
   toposoid-sentence-parser-japanese-web:
     image: toposoid/toposoid-sentence-parser-japanese-web:0.5-SNAPSHOT-lowspec
     environment:
-      - PRIVATE_IP_ADDRESS=172.30.0.4
+      - PRIVATE_IP_ADDRESS=toposoid-sentence-parser-japanese-web
       - PLAY_HTTP_PORT=9001
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.4
     ports:
       - 9001:9001
   toposoid-common-nlp-japanese-web:
     image: toposoid/toposoid-common-nlp-japanese-web:0.5-SNAPSHOT-lowspec
     environment:
-      - PRIVATE_IP_ADDRESS=172.30.0.5
+      - PRIVATE_IP_ADDRESS=toposoid-common-nlp-japanese-web
       - TOPOSOID_SYNONYM_NOUN_SIMILARITY_THRESHHOLD_JP=0.52
       - TOPOSOID_SYNONYM_VERB_SIMILARITY_THRESHHOLD_JP=0.52
       - TOPOSOID_WORD2VEC_SIMILARITY_THRESHHOLD_JP=0.68
@@ -71,27 +54,21 @@ services:
       - TOPOSOID_SENTENCEBERT_MODEL_JP=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
       - SENTENCE_TRANSFORMERS_HOME=./models
       - PLAY_HTTP_PORT=9006
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.5
     ports:
       - 9006:9006
   toposoid-sentence-parser-english-web:
     image: toposoid/toposoid-sentence-parser-english-web:0.5-SNAPSHOT-lowspec
     environment:
-      - PRIVATE_IP_ADDRESS=172.30.0.6
+      - PRIVATE_IP_ADDRESS=toposoid-sentence-parser-english-web
       - PLAY_HTTP_PORT=9007
-      - TOPOSOID_CORENLP_HOST=172.30.0.8
+      - TOPOSOID_CORENLP_HOST=corenlp
       - TOPOSOID_PARSER_SPACY_MODEL_EN=en_core_web_md
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.6
     ports:
       - 9007:9007
   toposoid-common-nlp-english-web:
     image: toposoid/toposoid-common-nlp-english-web:0.5-SNAPSHOT-lowspec
     environment:
-      - PRIVATE_IP_ADDRESS=172.30.0.7
+      - PRIVATE_IP_ADDRESS=toposoid-common-nlp-english-web
       - TOPOSOID_SYNONYM_NOUN_SIMILARITY_THRESHHOLD_EN=0.52
       - TOPOSOID_SYNONYM_VERB_SIMILARITY_THRESHHOLD_EN=0.52
       - TOPOSOID_WORD2VEC_SIMILARITY_THRESHHOLD_EN=0.78
@@ -99,16 +76,10 @@ services:
       - TOPOSOID_SENTENCEBERT_MODEL_EN=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
       - SENTENCE_TRANSFORMERS_HOME=./models
       - PLAY_HTTP_PORT=9008
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.7
     ports:
       - 9008:9008
   corenlp:
-    image: toposoid/corenlp:3.4.2-workflow
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.8
+    image: toposoid/corenlp:3.4.2-lowspec
     ports:
       - 9000:9000
   neo4j:
@@ -128,17 +99,11 @@ services:
       - NEO4J_dbms_allow__upgrade=true
       - NEO4J_dbms_default__database=neo4j
       - NEO4J_AUTH=neo4j/p@ssw0rd
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.2
 
   toposoid-contents-admin-web:
     image: toposoid/toposoid-contents-admin-web:0.5-SNAPSHOT
     environment:
-      - TOPOSOID_CONTENTS_URL=http://172.30.0.9:9012/contents/
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.9
+      - TOPOSOID_CONTENTS_URL=http://toposoid-contents-admin-web:9012/contents/
     ports:
       - 9012:9012
 
@@ -148,21 +113,15 @@ services:
       - TOPOSOID_IMAGE_RECOGNITION_VIT_MODEL=google/vit-base-patch16-224
       - TOPOSOID_IMAGE_RECOGNITION_MOBILE_VIT_MODEL=apple/mobilevit-small
       - TOPOSOID_IMAGE_RECOGNITION_MOBILE_VIT_USE=1
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.10
     ports:
       - 9013:9013
 
   data-accessor-sentence-weaviate-web:
     image: toposoid/data-accessor-weaviate-web:0.5-SNAPSHOT
     environment:
-      - TOPOSOID_WEAVIATE_HOST=172.30.0.12
+      - TOPOSOID_WEAVIATE_HOST=sentence-weaviate
       - TOPOSOID_WEAVIATE_PORT=8080
       - TOPOSOID_WEAVIATE_SIMILARITY_THRESHOLD=0.85
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.11
     ports:
       - 9020:9011
     depends_on:
@@ -178,9 +137,6 @@ services:
     image: semitechnologies/weaviate:1.21.2
     ports:
       - 8080:8080
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.12
     #volumes:
     #  - /var/weaviate:/var/lib/weaviate
     restart: on-failure:0
@@ -196,12 +152,9 @@ services:
   data-accessor-image-weaviate-web:
     image: toposoid/data-accessor-weaviate-web:0.5-SNAPSHOT
     environment:
-      - TOPOSOID_WEAVIATE_HOST=172.30.0.14
+      - TOPOSOID_WEAVIATE_HOST=image-weaviate
       - TOPOSOID_WEAVIATE_PORT=8081
       - TOPOSOID_WEAVIATE_SIMILARITY_THRESHOLD=0.85
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.13
     ports:
       - 9021:9011
     depends_on:
@@ -218,9 +171,6 @@ services:
     image: semitechnologies/weaviate:1.21.2
     ports:
       - 8081:8081
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.14
     #volumes:
     #  - /var/weaviate:/var/lib/weaviate
     restart: on-failure:0
