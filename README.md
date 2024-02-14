@@ -3,6 +3,7 @@ This is a WEB API that works as a microservice within the toposoid project.
 Toposoid is a knowledge base construction platform.(see [Toposoid　Root Project](https://github.com/toposoid/toposoid.git))
 This microservice makes inferences by matching images to a knowledge database.
 
+[![Test And Build](https://github.com/toposoid/toposoid-deduction-unit-image-vector-match-web/actions/workflows/action.yml/badge.svg)](https://github.com/toposoid/toposoid-deduction-unit-image-vector-match-web/actions/workflows/action.yml)
 
 * API Image
     * Input
