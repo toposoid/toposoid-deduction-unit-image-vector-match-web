@@ -16,12 +16,12 @@
 
 package controllers
 
-import com.ideal.linked.toposoid.common.{CLAIM, IMAGE, LOCAL, PREDICATE_ARGUMENT, PREMISE, ToposoidUtils}
+import com.ideal.linked.toposoid.common.{CLAIM, IMAGE, LOCAL, PREDICATE_ARGUMENT, PREMISE, TRANSVERSAL_STATE, ToposoidUtils, TransversalState}
 import com.ideal.linked.toposoid.deduction.common.DeductionUnitController
 import com.ideal.linked.toposoid.deduction.common.FacadeForAccessNeo4J.getCypherQueryResult
 import com.ideal.linked.toposoid.knowledgebase.model.{KnowledgeBaseEdge, KnowledgeBaseNode}
 import com.ideal.linked.toposoid.protocol.model.base.{AnalyzedSentenceObject, AnalyzedSentenceObjects, CoveredPropositionEdge, CoveredPropositionNode, KnowledgeBaseSideInfo, MatchedFeatureInfo}
-import com.ideal.linked.toposoid.protocol.model.neo4j.{Neo4jRecords}
+import com.ideal.linked.toposoid.protocol.model.neo4j.Neo4jRecords
 import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
 import com.ideal.linked.common.DeploymentConverter.conf
 import com.ideal.linked.toposoid.knowledgebase.featurevector.model.{FeatureVectorSearchResult, SingleFeatureVectorForSearch}
@@ -39,6 +39,7 @@ final case object NOT_MATCHED extends RelationMatchState(2)
 
 class HomeController @Inject()(val controllerComponents: ControllerComponents) extends BaseController with DeductionUnitController with LazyLogging {
   def execute() = Action(parse.json) { request =>
+    val transversalState = Json.parse(request.headers.get(TRANSVERSAL_STATE .str).get).as[TransversalState]
     try {
       val json = request.body
       val analyzedSentenceObjects: AnalyzedSentenceObjects = Json.parse(json.toString).as[AnalyzedSentenceObjects]
@@ -47,23 +48,25 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       //Check if the image exists on asos here　or not.
       if (getAnalyzedSentenceObjectsWithImage(asos).size > 0) {
         val result: List[AnalyzedSentenceObject] = asos.foldLeft(List.empty[AnalyzedSentenceObject]) {
-          (acc, x) => acc :+ analyze(x, acc, "image-vector-match", List(IMAGE.index))
+          (acc, x) => acc :+ analyze(x, acc, "image-vector-match", List(IMAGE.index), transversalState)
         }
+        logger.info(ToposoidUtils.formatMessageForLogger("deduction completed.", transversalState.username))
         Ok(Json.toJson(AnalyzedSentenceObjects(result))).as(JSON)
       }else{
+        logger.info(ToposoidUtils.formatMessageForLogger("deduction skipped[No Images].", transversalState.username))
         Ok(Json.toJson(analyzedSentenceObjects)).as(JSON)
       }
 
     } catch {
       case e: Exception => {
-        logger.error(e.toString, e)
+        logger.error(ToposoidUtils.formatMessageForLogger(e.toString, transversalState.username), e)
         BadRequest(Json.obj("status" -> "Error", "message" -> e.toString()))
       }
     }
   }
 
 
-  def analyzeGraphKnowledge(edge: KnowledgeBaseEdge, aso: AnalyzedSentenceObject, accParent: List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)]): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
+  def analyzeGraphKnowledge(edge: KnowledgeBaseEdge, aso: AnalyzedSentenceObject, accParent: List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)], transversalState:TransversalState): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
 
     val nodeMap: Map[String, KnowledgeBaseNode] = aso.nodeMap
     val sentenceType = aso.knowledgeBaseSemiGlobalNode.sentenceType
@@ -74,11 +77,11 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
 
     val initAcc: List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = sentenceType match {
       case PREMISE.index => {
-        accParent ::: searchMatchRelation(sourceNode, destinationNode, edge.caseStr, CLAIM.index)
+        accParent ::: searchMatchRelation(sourceNode, destinationNode, edge.caseStr, CLAIM.index, transversalState)
       }
       case _ => accParent
     }
-    initAcc ::: searchMatchRelation(sourceNode, destinationNode, edge.caseStr, sentenceType)
+    initAcc ::: searchMatchRelation(sourceNode, destinationNode, edge.caseStr, sentenceType, transversalState)
 
   }
 
@@ -92,13 +95,13 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     })
   }
 
-  private def getSimilarImage(node:KnowledgeBaseNode,sentenceType:Int):List[String] = {
+  private def getSimilarImage(node:KnowledgeBaseNode,sentenceType:Int, transversalState:TransversalState):List[String] = {
     //There may be multiple image nodes, so check them all
     node.localContext.knowledgeFeatureReferences.foldLeft(List.empty[String]){(acc, x) => {
 
-      val vector = FeatureVectorizer.getImageVector(x.url)
+      val vector = FeatureVectorizer.getImageVector(x.url, transversalState)
       val json: String = Json.toJson(SingleFeatureVectorForSearch(vector = vector.vector, num = conf.getString("TOPOSOID_IMAGE_VECTORDB_SEARCH_NUM_MAX").toInt)).toString()
-      val featureVectorSearchResultJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "search")
+      val featureVectorSearchResultJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "search", transversalState)
       val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
       acc ::: result.ids.filter(_.sentenceType == sentenceType).map(_.featureId)
     }}
@@ -112,7 +115,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
    * @param caseName
    * @return
    */
-  private def searchMatchRelation(sourceNode: KnowledgeBaseNode, targetNode: KnowledgeBaseNode, caseName: String, sentenceType: Int): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
+  private def searchMatchRelation(sourceNode: KnowledgeBaseNode, targetNode: KnowledgeBaseNode, caseName: String, sentenceType: Int, transversalState:TransversalState): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
 
     val nodeType: String = ToposoidUtils.getNodeType(sentenceType, LOCAL.index, PREDICATE_ARGUMENT.index)
     val sourceSurface = sourceNode.predicateArgumentStructure.surface
@@ -120,7 +123,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     //エッジの両側ノードで厳格に一致するものがあるかどうか
     val queryBoth = "MATCH (n1:%s)-[e]-(n2:%s) WHERE n1.normalizedName='%s' AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.normalizedName='%s' AND n2.isDenialWord='%s' RETURN n1, e, n2".format(nodeType, nodeType, sourceNode.predicateArgumentStructure.normalizedName, sourceNode.predicateArgumentStructure.isDenialWord, caseName, targetNode.predicateArgumentStructure.normalizedName, targetNode.predicateArgumentStructure.isDenialWord)
     logger.debug(queryBoth)
-    val queryBothResultJson: String = getCypherQueryResult(queryBoth, "")
+    val queryBothResultJson: String = getCypherQueryResult(queryBoth, "", transversalState)
     if (!queryBothResultJson.equals("""{"records":[]}""")) {
       //ヒットするものがある場合
       getKnowledgeBaseSideInfo(Json.parse(queryBothResultJson).as[Neo4jRecords], sourceNode, targetNode)
@@ -129,21 +132,21 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       //上記でヒットしない場合、エッジの片側ノード（Source）で厳格に一致するものがあるかどうか
       val querySourceOnly = "MATCH (n1:%s)-[e]-(n2:%s) WHERE n1.normalizedName='%s' AND n1.isDenialWord='%s' AND e.caseName='%s' RETURN n1, e, n2".format(nodeType, nodeType, sourceNode.predicateArgumentStructure.normalizedName, sourceNode.predicateArgumentStructure.isDenialWord, caseName)
       logger.debug(querySourceOnly)
-      val querySourceOnlyResultJson: String = getCypherQueryResult(querySourceOnly, "")
+      val querySourceOnlyResultJson: String = getCypherQueryResult(querySourceOnly, "", transversalState)
       if (!querySourceOnlyResultJson.equals("""{"records":[]}""")) {
         //TargetをImageに置き換えられる可能性あり
-        checkImageNode(sourceNode, targetNode, caseName, MATCHED_SOURCE_NODE_ONLY, sentenceType, List.empty[String], getSimilarImage(targetNode, sentenceType))
+        checkImageNode(sourceNode, targetNode, caseName, MATCHED_SOURCE_NODE_ONLY, sentenceType, List.empty[String], getSimilarImage(targetNode, sentenceType, transversalState) , transversalState)
       } else {
         //上記でヒットしない場合、エッジの片側ノード（Target）で厳格に一致するものがあるかどうか
         val queryTargetOnly = "MATCH (n1:%s)-[e]-(n2:%s) WHERE e.caseName='%s' AND n2.normalizedName='%s' AND n2.isDenialWord='%s' RETURN n1, e, n2".format(nodeType, nodeType, caseName, targetNode.predicateArgumentStructure.normalizedName, targetNode.predicateArgumentStructure.isDenialWord)
         logger.debug(queryTargetOnly)
-        val queryTargetOnlyResultJson: String = getCypherQueryResult(queryTargetOnly, "")
+        val queryTargetOnlyResultJson: String = getCypherQueryResult(queryTargetOnly, "", transversalState)
         if (!queryTargetOnlyResultJson.equals("""{"records":[]}""")) {
           //SourceをImageに置き換えられる可能性あり
-          checkImageNode(sourceNode, targetNode, caseName, MATCHED_TARGET_NODE_ONLY, sentenceType, getSimilarImage(sourceNode, sentenceType), List.empty[String])
+          checkImageNode(sourceNode, targetNode, caseName, MATCHED_TARGET_NODE_ONLY, sentenceType, getSimilarImage(sourceNode, sentenceType, transversalState), List.empty[String], transversalState)
         } else {
           //もしTargetとSourceをImageに置き換えられれば、OK
-          checkImageNode(sourceNode, targetNode, caseName, NOT_MATCHED, sentenceType, getSimilarImage(sourceNode, sentenceType), getSimilarImage(targetNode, sentenceType))
+          checkImageNode(sourceNode, targetNode, caseName, NOT_MATCHED, sentenceType, getSimilarImage(sourceNode, sentenceType, transversalState), getSimilarImage(targetNode, sentenceType, transversalState), transversalState)
         }
       }
     }
@@ -187,7 +190,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
    * @param relationMatchState
    * @return
    */
-  private def checkImageNode(sourceNode: KnowledgeBaseNode, targetNode: KnowledgeBaseNode, caseName: String, relationMatchState: RelationMatchState, sentenceType: Int, sourceFeatureIds:List[String], targetFeatureIds:List[String]): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
+  private def checkImageNode(sourceNode: KnowledgeBaseNode, targetNode: KnowledgeBaseNode, caseName: String, relationMatchState: RelationMatchState, sentenceType: Int, sourceFeatureIds:List[String], targetFeatureIds:List[String], transversalState:TransversalState): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
 
     val nodeType: String = ToposoidUtils.getNodeType(sentenceType, LOCAL.index, PREDICATE_ARGUMENT.index)
     val query = relationMatchState match {
@@ -202,7 +205,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       }
     }
 
-    val resultJson: String = getCypherQueryResult(query, "")
+    val resultJson: String = getCypherQueryResult(query, "", transversalState)
     logger.debug(query)
     if (resultJson.equals("""{"records":[]}""")) {
       List.empty[(KnowledgeBaseSideInfo, CoveredPropositionEdge)]
