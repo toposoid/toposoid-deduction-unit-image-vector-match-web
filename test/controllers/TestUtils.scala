@@ -44,11 +44,11 @@ object TestUtils {
   }
 
 
-  def getKnowledge(lang:String, sentence: String, reference: Reference, imageBoxInfo: ImageBoxInfo): Knowledge = {
-    Knowledge(sentence, lang, "{}", false, List(getImageInfo(reference, imageBoxInfo)))
+  def getKnowledge(lang:String, sentence: String, reference: Reference, imageBoxInfo: ImageBoxInfo, transversalState: TransversalState): Knowledge = {
+    Knowledge(sentence, lang, "{}", false, List(getImageInfo(reference, imageBoxInfo, transversalState)))
   }
 
-  def getImageInfo(reference: Reference, imageBoxInfo: ImageBoxInfo): KnowledgeForImage = {
+  def getImageInfo(reference: Reference, imageBoxInfo: ImageBoxInfo, transversalState: TransversalState): KnowledgeForImage = {
     val imageReference = ImageReference(reference: Reference, imageBoxInfo.x, imageBoxInfo.y, imageBoxInfo.weight, imageBoxInfo.height)
     val knowledgeForImage = KnowledgeForImage(id = getUUID(), imageReference = imageReference)
     val registContentResultJson = ToposoidUtils.callComponent(
@@ -56,27 +56,27 @@ object TestUtils {
       conf.getString("TOPOSOID_CONTENTS_ADMIN_HOST"),
       conf.getString("TOPOSOID_CONTENTS_ADMIN_PORT"),
       "registImage",
-      TransversalState(username="guest")
-    )
+      transversalState)
+
     val registContentResult: RegistContentResult = Json.parse(registContentResultJson).as[RegistContentResult]
     registContentResult.knowledgeForImage
   }
 
-  def registSingleClaim(knowledgeForParser: KnowledgeForParser): Unit = {
+  def registSingleClaim(knowledgeForParser: KnowledgeForParser, transversalState: TransversalState): Unit = {
     val knowledgeSentenceSetForParser = KnowledgeSentenceSetForParser(
       List.empty[KnowledgeForParser],
       List.empty[PropositionRelation],
       List(knowledgeForParser),
       List.empty[PropositionRelation])
-    Sentence2Neo4jTransformer.createGraph(knowledgeSentenceSetForParser, TransversalState(username="guest"))
-    FeatureVectorizer.createVector(knowledgeSentenceSetForParser, TransversalState(username="guest"))
+    Sentence2Neo4jTransformer.createGraph(knowledgeSentenceSetForParser, transversalState)
+    FeatureVectorizer.createVector(knowledgeSentenceSetForParser, transversalState)
   }
 
-  def addImageInfoToAnalyzedSentenceObjects(lang:String,inputSentence: String, knowledgeForImages: List[KnowledgeForImage]): String = {
+  def addImageInfoToAnalyzedSentenceObjects(lang:String,inputSentence: String, knowledgeForImages: List[KnowledgeForImage], transversalState: TransversalState): String = {
 
     val json = lang match {
-      case "ja_JP" => ToposoidUtils.callComponent(inputSentence, conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT"), "analyze", TransversalState(username="guest"))
-      case "en_US" => ToposoidUtils.callComponent(inputSentence, conf.getString("TOPOSOID_SENTENCE_PARSER_EN_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_EN_WEB_PORT"), "analyze", TransversalState(username="guest"))
+      case "ja_JP" => ToposoidUtils.callComponent(inputSentence, conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT"), "analyze", transversalState)
+      case "en_US" => ToposoidUtils.callComponent(inputSentence, conf.getString("TOPOSOID_SENTENCE_PARSER_EN_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_EN_WEB_PORT"), "analyze", transversalState)
     }
     //val json = ToposoidUtils.callComponent(inputSentence, conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT"), "analyze")
     val asos: AnalyzedSentenceObjects = Json.parse(json).as[AnalyzedSentenceObjects]
