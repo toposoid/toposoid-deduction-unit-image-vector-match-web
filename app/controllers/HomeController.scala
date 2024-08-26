@@ -50,16 +50,16 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
         val result: List[AnalyzedSentenceObject] = asos.foldLeft(List.empty[AnalyzedSentenceObject]) {
           (acc, x) => acc :+ analyze(x, acc, "image-vector-match", List(IMAGE.index), transversalState)
         }
-        logger.info(ToposoidUtils.formatMessageForLogger("deduction completed.", transversalState.username))
+        logger.info(ToposoidUtils.formatMessageForLogger("deduction completed.", transversalState.userId))
         Ok(Json.toJson(AnalyzedSentenceObjects(result))).as(JSON)
       }else{
-        logger.info(ToposoidUtils.formatMessageForLogger("deduction skipped[No Images].", transversalState.username))
+        logger.info(ToposoidUtils.formatMessageForLogger("deduction skipped[No Images].", transversalState.userId))
         Ok(Json.toJson(analyzedSentenceObjects)).as(JSON)
       }
 
     } catch {
       case e: Exception => {
-        logger.error(ToposoidUtils.formatMessageForLogger(e.toString, transversalState.username), e)
+        logger.error(ToposoidUtils.formatMessageForLogger(e.toString, transversalState.userId), e)
         BadRequest(Json.obj("status" -> "Error", "message" -> e.toString()))
       }
     }
