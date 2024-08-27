@@ -19,14 +19,13 @@ package controllers
 import akka.util.Timeout
 import com.ideal.linked.common.DeploymentConverter.conf
 import com.ideal.linked.data.accessor.neo4j.Neo4JAccessor
-import com.ideal.linked.toposoid.common.{CLAIM, PREMISE, TRANSVERSAL_STATE, ToposoidUtils, TransversalState}
+import com.ideal.linked.toposoid.common._
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{PropositionRelation, Reference}
 import com.ideal.linked.toposoid.protocol.model.base.AnalyzedSentenceObjects
 import com.ideal.linked.toposoid.protocol.model.parser.{InputSentenceForParser, KnowledgeForParser, KnowledgeSentenceSetForParser}
 import com.ideal.linked.toposoid.sentence.transformer.neo4j.Sentence2Neo4jTransformer
 import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
-import controllers.TestUtils.{addImageInfoToAnalyzedSentenceObjects, getImageInfo, getKnowledge, getUUID, registSingleClaim}
-import io.jvm.uuid.UUID
+import controllers.TestUtils._
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -38,7 +37,7 @@ import play.api.test._
 
 import scala.concurrent.duration.DurationInt
 
-class HomeControllerSpecEnglish4 extends PlaySpec with BeforeAndAfter with BeforeAndAfterAll with GuiceOneAppPerSuite with DefaultAwaitTimeout with Injecting {
+class HomeControllerSpecEnglish4_2 extends PlaySpec with BeforeAndAfter with BeforeAndAfterAll with GuiceOneAppPerSuite with DefaultAwaitTimeout with Injecting {
 
   val transversalState:TransversalState = TransversalState(userId="test-user", username="guest", roleId=0, csrfToken = "")
   val transversalStateJson:String = Json.toJson(transversalState).toString()
@@ -103,7 +102,7 @@ class HomeControllerSpecEnglish4 extends PlaySpec with BeforeAndAfter with Befor
   val imageBoxInfoParaD = ImageBoxInfo(x = 223, y = 108, weight = 140, height = 205)
 
   val lang = "en_US"
-
+  /*
   "The specification31" should {
     "returns an appropriate response" in {
       val propositionId1 = getUUID()
@@ -306,7 +305,7 @@ class HomeControllerSpecEnglish4 extends PlaySpec with BeforeAndAfter with Befor
       assert(analyzedSentenceObjects.analyzedSentenceObjects.filter(x => x.knowledgeBaseSemiGlobalNode.sentenceType.equals(CLAIM.index) && x.deductionResult.havePremiseInGivenProposition).size == 0)
     }
   }
-
+  */
   "The specification36" should {
     "returns an appropriate response" in {
       val propositionId1 = getUUID()
