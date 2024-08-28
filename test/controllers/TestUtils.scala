@@ -25,12 +25,13 @@ import com.ideal.linked.toposoid.protocol.model.base.{AnalyzedSentenceObject, An
 import com.ideal.linked.toposoid.protocol.model.parser.{KnowledgeForParser, KnowledgeSentenceSetForParser}
 import com.ideal.linked.toposoid.sentence.transformer.neo4j.Sentence2Neo4jTransformer
 import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
+import com.typesafe.scalalogging.LazyLogging
 import play.api.libs.json.Json
 import io.jvm.uuid.UUID
 
 case class ImageBoxInfo(x:Int, y:Int, weight:Int, height:Int)
 
-object TestUtils {
+object TestUtils extends LazyLogging {
 
   var usedUuidList = List.empty[String]
 
@@ -40,6 +41,7 @@ object TestUtils {
       uuid = UUID.random.toString
     }
     usedUuidList = usedUuidList :+ uuid
+    logger.info(uuid)
     uuid
   }
 
