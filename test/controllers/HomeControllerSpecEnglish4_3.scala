@@ -36,7 +36,7 @@ import play.api.test._
 
 import scala.concurrent.duration.DurationInt
 
-class HomeControllerSpecEnglish4_2 extends PlaySpec with BeforeAndAfter with BeforeAndAfterAll with GuiceOneAppPerSuite with DefaultAwaitTimeout with Injecting {
+class HomeControllerSpecEnglish4_3 extends PlaySpec with BeforeAndAfter with BeforeAndAfterAll with GuiceOneAppPerSuite with DefaultAwaitTimeout with Injecting {
 
   val transversalState:TransversalState = TransversalState(userId="test-user", username="guest", roleId=0, csrfToken = "")
   val transversalStateJson:String = Json.toJson(transversalState).toString()
@@ -304,7 +304,7 @@ class HomeControllerSpecEnglish4_2 extends PlaySpec with BeforeAndAfter with Bef
       assert(analyzedSentenceObjects.analyzedSentenceObjects.filter(x => x.knowledgeBaseSemiGlobalNode.sentenceType.equals(CLAIM.index) && x.deductionResult.havePremiseInGivenProposition).size == 0)
     }
   }
-  */
+
   "The specification36" should {
     "returns an appropriate response" in {
       val propositionId1 = getUUID()
@@ -450,7 +450,7 @@ class HomeControllerSpecEnglish4_2 extends PlaySpec with BeforeAndAfter with Bef
       assert(analyzedSentenceObjects.analyzedSentenceObjects.filter(x => x.knowledgeBaseSemiGlobalNode.sentenceType.equals(CLAIM.index) && x.deductionResult.havePremiseInGivenProposition).size == 0)
     }
   }
-  /*
+  */
   "The specification38" should {
     "returns an appropriate response" in {
       val propositionId1 = getUUID()
@@ -606,5 +606,5 @@ class HomeControllerSpecEnglish4_2 extends PlaySpec with BeforeAndAfter with Bef
       assert(analyzedSentenceObjects.analyzedSentenceObjects.filter(x => x.knowledgeBaseSemiGlobalNode.sentenceType.equals(CLAIM.index) && x.deductionResult.havePremiseInGivenProposition).size == 0)
     }
   }
-  */
+
 }
