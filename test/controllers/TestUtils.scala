@@ -56,7 +56,7 @@ object TestUtils extends LazyLogging {
       uuid = UUID.random.toString
     }
     usedUuidList = usedUuidList :+ uuid
-    logger.info(uuid)
+    //logger.info(uuid)
     uuid
   }
 
