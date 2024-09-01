@@ -29,7 +29,7 @@ services:
     ports:
       - 9104:9104
   scala-data-accessor-neo4j-web:
-    image: toposoid/scala-data-accessor-neo4j-web:0.6-SNAPSHOT-lowspec
+    image: toposoid/scala-data-accessor-neo4j-web:0.6-SNAPSHOT
     environment:
       - PRIVATE_IP_ADDRESS=scala-data-accessor-neo4j-web
       - TOPOSOID_GRAPHDB_HOST=neo4j
@@ -92,7 +92,7 @@ services:
       - NEO4J_apoc_import_file_enabled=true
       - NEO4J_dbms_security_procedures_unrestricted=apoc.*,algo.*
       - NEO4J_dbms_memory_heap_initial__size=512m
-      - NEO4J_dbms_memory_heap_max__size=2G
+      - NEO4J_dbms_memory_heap_max__size=4G
       - NEO4J_dbms_transaction_timeout=10s
       - NEO4J_apoc_uuid_enabled=true
       - NEO4J_dbms_default__listen__address=0.0.0.0
@@ -135,7 +135,7 @@ services:
       - '8080'
       - --scheme
       - http
-    image: cr.weaviate.io/semitechnologies/weaviate:1.26.1
+    image: cr.weaviate.io/semitechnologies/weaviate:1.26.3
     ports:
       - 8080:8080
     #volumes:
@@ -170,7 +170,7 @@ services:
       - '8081'
       - --scheme
       - http
-    image: cr.weaviate.io/semitechnologies/weaviate:1.26.1
+    image: cr.weaviate.io/semitechnologies/weaviate:1.26.3
     ports:
       - 8081:8081
     #volumes:

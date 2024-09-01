@@ -135,7 +135,7 @@ services:
       - '8080'
       - --scheme
       - http
-    image: cr.weaviate.io/semitechnologies/weaviate:1.26.1
+    image: cr.weaviate.io/semitechnologies/weaviate:1.26.3
     ports:
       - 8080:8080
     #volumes:
@@ -170,7 +170,7 @@ services:
       - '8081'
       - --scheme
       - http
-    image: cr.weaviate.io/semitechnologies/weaviate:1.26.1
+    image: cr.weaviate.io/semitechnologies/weaviate:1.26.3
     ports:
       - 8081:8081
     #volumes:
