@@ -17,5 +17,5 @@ libraryDependencies += "com.ideal.linked" %% "toposoid-deduction-protocol-model"
 libraryDependencies += "com.ideal.linked" %% "toposoid-deduction-common" % "0.6-SNAPSHOT"
 libraryDependencies += "com.ideal.linked" %% "toposoid-feature-vectorizer" % "0.6-SNAPSHOT"
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
-libraryDependencies += "com.ideal.linked" %% "toposoid-sentence-transformer-neo4j" % "0.6-SNAPSHOT"
+libraryDependencies +=  "com.ideal.linked" %% "toposoid-test-utils" % "0.6-SNAPSHOT" % Test
 libraryDependencies += "io.jvm.uuid" %% "scala-uuid" % "0.3.1" % Test

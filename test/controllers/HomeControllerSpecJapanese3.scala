@@ -22,9 +22,8 @@ import com.ideal.linked.toposoid.common.{CLAIM, PREMISE, TRANSVERSAL_STATE, Topo
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, PropositionRelation, Reference}
 import com.ideal.linked.toposoid.protocol.model.base.AnalyzedSentenceObjects
 import com.ideal.linked.toposoid.protocol.model.parser.{InputSentenceForParser, KnowledgeForParser, KnowledgeSentenceSetForParser}
-import com.ideal.linked.toposoid.sentence.transformer.neo4j.Sentence2Neo4jTransformer
-import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
-import controllers.TestUtils.{addImageInfoToAnalyzedSentenceObjects, getImageInfo, getKnowledge, getUUID, registSingleClaim}
+import com.ideal.linked.toposoid.test.utils.TestUtils
+import controllers.TestUtilsEx.{addImageInfoToAnalyzedSentenceObjects, getImageInfo, getKnowledge, getUUID, registerSingleClaim}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -42,18 +41,18 @@ class HomeControllerSpecJapanese3 extends PlaySpec with BeforeAndAfter with Befo
   val transversalStateJson:String = Json.toJson(transversalState).toString()
 
   before {
-    TestUtils.deleteNeo4JAllData(transversalState)
+    TestUtilsEx.deleteNeo4JAllData(transversalState)
     ToposoidUtils.callComponent("{}", conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "createSchema", transversalState)
     ToposoidUtils.callComponent("{}", conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "createSchema", transversalState)
     Thread.sleep(1000)
   }
 
   override def beforeAll(): Unit = {
-    TestUtils.deleteNeo4JAllData(transversalState)
+    TestUtilsEx.deleteNeo4JAllData(transversalState)
   }
 
   override def afterAll(): Unit = {
-    TestUtils.deleteNeo4JAllData(transversalState)
+    TestUtilsEx.deleteNeo4JAllData(transversalState)
   }
 
   override implicit def defaultAwaitTimeout: Timeout = 600.seconds
@@ -116,8 +115,8 @@ class HomeControllerSpecJapanese3 extends PlaySpec with BeforeAndAfter with Befo
       val paraphrase2 = getKnowledge(lang=lang, sentence=paraphraseB, reference=referenceParaB, imageBoxInfo=imageBoxInfoParaB, transversalState)
       val paraphrase3 = getKnowledge(lang=lang, sentence=paraphraseC, reference=referenceParaC, imageBoxInfo=imageBoxInfoParaC, transversalState)
 
-      registSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge2), transversalState)
-      registSingleClaim(KnowledgeForParser(propositionId2, sentenceId2, knowledge3), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge2), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId2, sentenceId2, knowledge3), transversalState)
       val propositionIdForInference = getUUID()
       val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1))
       val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase3))
@@ -157,8 +156,7 @@ class HomeControllerSpecJapanese3 extends PlaySpec with BeforeAndAfter with Befo
         List.empty[PropositionRelation],
         List(KnowledgeForParser(propositionId1, sentenceId2, knowledge2), KnowledgeForParser(propositionId1, sentenceId3, knowledge3)),
         List(PropositionRelation("AND", 0,1)))
-      Sentence2Neo4jTransformer.createGraph(knowledgeSentenceSetForParser, transversalState)
-      FeatureVectorizer.createVector(knowledgeSentenceSetForParser, transversalState)
+      TestUtils.registerData(knowledgeSentenceSetForParser, transversalState)
       Thread.sleep(5000)
 
       val propositionIdForInference = getUUID()
@@ -196,15 +194,14 @@ class HomeControllerSpecJapanese3 extends PlaySpec with BeforeAndAfter with Befo
       val paraphrase2 = getKnowledge(lang=lang, sentence=paraphraseB, reference=referenceParaB, imageBoxInfo=imageBoxInfoParaB, transversalState)
       val paraphrase3 = getKnowledge(lang=lang, sentence=paraphraseC, reference=referenceParaC, imageBoxInfo=imageBoxInfoParaC, transversalState)
 
-      registSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
       val knowledge1a = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA, transversalState)
       val knowledgeSentenceSetForParser = KnowledgeSentenceSetForParser(
         List(KnowledgeForParser(propositionId2, sentenceId2, knowledge1a)),
         List.empty[PropositionRelation],
         List(KnowledgeForParser(propositionId2, sentenceId3, knowledge2), KnowledgeForParser(propositionId2, sentenceId4, knowledge3)),
         List(PropositionRelation("AND", 0,1)))
-      Sentence2Neo4jTransformer.createGraph(knowledgeSentenceSetForParser, transversalState)
-      FeatureVectorizer.createVector(knowledgeSentenceSetForParser, transversalState)
+      TestUtils.registerData(knowledgeSentenceSetForParser, transversalState)
       Thread.sleep(5000)
 
       val propositionIdForInference = getUUID()
@@ -243,9 +240,9 @@ class HomeControllerSpecJapanese3 extends PlaySpec with BeforeAndAfter with Befo
       val paraphrase2 = getKnowledge(lang = lang, sentence = paraphraseB, reference = referenceParaB, imageBoxInfo = imageBoxInfoParaB, transversalState)
       val paraphrase3 = getKnowledge(lang = lang, sentence = paraphraseC, reference = referenceParaC, imageBoxInfo = imageBoxInfoParaC, transversalState)
 
-      registSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
-      registSingleClaim(KnowledgeForParser(propositionId2, sentenceId2, knowledge2), transversalState)
-      registSingleClaim(KnowledgeForParser(propositionId3, sentenceId3, knowledge3), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId2, sentenceId2, knowledge2), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId3, sentenceId3, knowledge3), transversalState)
 
       val propositionIdForInference = getUUID()
       val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1))
@@ -284,8 +281,7 @@ class HomeControllerSpecJapanese3 extends PlaySpec with BeforeAndAfter with Befo
         List.empty[PropositionRelation],
         List(KnowledgeForParser(propositionId1, sentenceId2, knowledge2)),
         List.empty[PropositionRelation])
-      Sentence2Neo4jTransformer.createGraph(knowledgeSentenceSetForParser, transversalState)
-      FeatureVectorizer.createVector(knowledgeSentenceSetForParser, transversalState)
+      TestUtils.registerData(knowledgeSentenceSetForParser, transversalState)
       Thread.sleep(5000)
 
       val propositionIdForInference = getUUID()
@@ -322,15 +318,14 @@ class HomeControllerSpecJapanese3 extends PlaySpec with BeforeAndAfter with Befo
       val paraphrase2 = getKnowledge(lang=lang, sentence=paraphraseB, reference=referenceParaB, imageBoxInfo=imageBoxInfoParaB, transversalState)
       val paraphrase3 = getKnowledge(lang=lang, sentence=paraphraseC, reference=referenceParaC, imageBoxInfo=imageBoxInfoParaC, transversalState)
 
-      registSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
       val knowledge1a = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA, transversalState)
       val knowledgeSentenceSetForParser = KnowledgeSentenceSetForParser(
         List(KnowledgeForParser(propositionId2, sentenceId2, knowledge1a)),
         List.empty[PropositionRelation],
         List(KnowledgeForParser(propositionId2, sentenceId3, knowledge2)),
         List.empty[PropositionRelation])
-      Sentence2Neo4jTransformer.createGraph(knowledgeSentenceSetForParser, transversalState)
-      FeatureVectorizer.createVector(knowledgeSentenceSetForParser, transversalState)
+      TestUtils.registerData(knowledgeSentenceSetForParser, transversalState)
       Thread.sleep(5000)
 
       val propositionIdForInference = getUUID()
@@ -368,15 +363,14 @@ class HomeControllerSpecJapanese3 extends PlaySpec with BeforeAndAfter with Befo
       val paraphrase2 = getKnowledge(lang=lang, sentence=paraphraseB, reference=referenceParaB, imageBoxInfo=imageBoxInfoParaB, transversalState)
       val paraphrase3 = getKnowledge(lang=lang, sentence=paraphraseC, reference=referenceParaC, imageBoxInfo=imageBoxInfoParaC, transversalState)
 
-      registSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
       val knowledge1a = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA, transversalState)
       val knowledgeSentenceSetForParser = KnowledgeSentenceSetForParser(
         List(KnowledgeForParser(propositionId2, sentenceId2, knowledge1a)),
         List.empty[PropositionRelation],
         List(KnowledgeForParser(propositionId2, sentenceId3, knowledge3)),
         List.empty[PropositionRelation])
-      Sentence2Neo4jTransformer.createGraph(knowledgeSentenceSetForParser, transversalState)
-      FeatureVectorizer.createVector(knowledgeSentenceSetForParser, transversalState)
+      TestUtils.registerData(knowledgeSentenceSetForParser, transversalState)
       Thread.sleep(5000)
 
       val propositionIdForInference = getUUID()
@@ -413,7 +407,7 @@ class HomeControllerSpecJapanese3 extends PlaySpec with BeforeAndAfter with Befo
       val paraphrase3 = getKnowledge(lang=lang, sentence=paraphraseC, reference=referenceParaC, imageBoxInfo=imageBoxInfoParaC, transversalState)
       val paraphrase4 = getKnowledge(lang=lang, sentence=paraphraseD, reference=referenceParaD, imageBoxInfo=imageBoxInfoParaD, transversalState)
 
-      registSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
 
       val propositionIdForInference = getUUID()
       val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2))
@@ -449,7 +443,7 @@ class HomeControllerSpecJapanese3 extends PlaySpec with BeforeAndAfter with Befo
       val paraphrase3 = getKnowledge(lang=lang, sentence=paraphraseC, reference=referenceParaC, imageBoxInfo=imageBoxInfoParaC, transversalState)
       val paraphrase4 = getKnowledge(lang=lang, sentence=paraphraseD, reference=referenceParaD, imageBoxInfo=imageBoxInfoParaD, transversalState)
 
-      registSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge2), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge2), transversalState)
 
       val propositionIdForInference = getUUID()
       val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2))
@@ -485,7 +479,7 @@ class HomeControllerSpecJapanese3 extends PlaySpec with BeforeAndAfter with Befo
       val paraphrase3 = getKnowledge(lang=lang, sentence=paraphraseC, reference=referenceParaC, imageBoxInfo=imageBoxInfoParaC, transversalState)
       val paraphrase4 = getKnowledge(lang=lang, sentence=paraphraseD, reference=referenceParaD, imageBoxInfo=imageBoxInfoParaD, transversalState)
 
-      registSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge3), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge3), transversalState)
 
       val propositionIdForInference = getUUID()
       val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2))
@@ -520,7 +514,7 @@ class HomeControllerSpecJapanese3 extends PlaySpec with BeforeAndAfter with Befo
       val paraphrase3 = getKnowledge(lang=lang, sentence=paraphraseC, reference=referenceParaC, imageBoxInfo=imageBoxInfoParaC, transversalState)
       val paraphrase4 = getKnowledge(lang=lang, sentence=paraphraseD, reference=referenceParaD, imageBoxInfo=imageBoxInfoParaD, transversalState)
 
-      registSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge4), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge4), transversalState)
 
       val propositionIdForInference = getUUID()
       val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase1), KnowledgeForParser(propositionIdForInference, getUUID(), paraphrase2))
