@@ -123,7 +123,7 @@ services:
     ports:
       - 9001:9001
   toposoid-common-nlp-japanese-web:
-    image: toposoid/toposoid-common-nlp-japanese-web:0.6
+    image: toposoid/toposoid-common-nlp-japanese-web:0.6-lowspec
     environment:
       - PRIVATE_IP_ADDRESS=toposoid-common-nlp-japanese-web
       - TOPOSOID_SYNONYM_NOUN_SIMILARITY_THRESHHOLD_JP=0.52
@@ -136,7 +136,7 @@ services:
     ports:
       - 9006:9006
   toposoid-sentence-parser-english-web:
-    image: toposoid/toposoid-sentence-parser-english-web:0.6
+    image: toposoid/toposoid-sentence-parser-english-web:0.6-lowspec
     environment:
       - PRIVATE_IP_ADDRESS=toposoid-sentence-parser-english-web
       - PLAY_HTTP_PORT=9007
@@ -145,7 +145,7 @@ services:
     ports:
       - 9007:9007
   toposoid-common-nlp-english-web:
-    image: toposoid/toposoid-common-nlp-english-web:0.6
+    image: toposoid/toposoid-common-nlp-english-web:0.6-lowspec
     environment:
       - PRIVATE_IP_ADDRESS=toposoid-common-nlp-english-web
       - TOPOSOID_SYNONYM_NOUN_SIMILARITY_THRESHHOLD_EN=0.52
@@ -187,7 +187,7 @@ services:
       - 9012:9012
 
   toposoid-common-image-recognition-web:
-    image: toposoid/toposoid-common-image-recognition-web:0.6
+    image: toposoid/toposoid-common-image-recognition-web:0.6-lowspec
     environment:
       - TOPOSOID_IMAGE_RECOGNITION_VIT_MODEL=google/vit-base-patch16-224
       - TOPOSOID_IMAGE_RECOGNITION_MOBILE_VIT_MODEL=apple/mobilevit-small
@@ -217,8 +217,8 @@ services:
     image: cr.weaviate.io/semitechnologies/weaviate:1.26.3
     ports:
       - 8080:8080
-  #  #volumes:
-  #  #  - /var/weaviate:/var/lib/weaviate
+    #  #volumes:
+    #  #  - /var/weaviate:/var/lib/weaviate
     restart: on-failure:0
     environment:
       QUERY_DEFAULTS_LIMIT: 25
