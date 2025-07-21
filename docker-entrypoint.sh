@@ -18,4 +18,4 @@ fi
 
 export _JAVA_OPTIONS=$_JAVA_OPTIONS
 cd /app/toposoid-deduction-unit-image-vector-match-web/target/universal
-toposoid-deduction-unit-image-vector-match-web-0.6-SNAPSHOT/bin/toposoid-deduction-unit-image-vector-match-web
+toposoid-deduction-unit-image-vector-match-web-0.6/bin/toposoid-deduction-unit-image-vector-match-web
