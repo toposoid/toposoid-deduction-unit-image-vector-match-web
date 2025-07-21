@@ -1,4 +1,4 @@
-FROM toposoid/toposoid-scala-lib:0.6-SNAPSHOT
+FROM toposoid/toposoid-scala-lib:0.6
 
 WORKDIR /app
 ARG TARGET_BRANCH
@@ -29,7 +29,7 @@ RUN git clone https://github.com/toposoid/toposoid-test-utils.git \
 && sbt playUpdateSecret 1> /dev/null \
 && sbt dist \
 && cd /app/toposoid-deduction-unit-image-vector-match-web/target/universal \
-&& unzip -o toposoid-deduction-unit-image-vector-match-web-0.6-SNAPSHOT.zip
+&& unzip -o toposoid-deduction-unit-image-vector-match-web-0.6.zip
 
 
 COPY ./docker-entrypoint.sh /app/
