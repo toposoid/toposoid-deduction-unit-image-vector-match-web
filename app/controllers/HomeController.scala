@@ -32,6 +32,8 @@ import play.api.libs.json.{Json, __}
 import javax.inject._
 import play.api._
 import play.api.mvc._
+import play.api.libs.json.JsValue
+
 
 sealed abstract class RelationMatchState(val index: Int)
 final case object MATCHED_SOURCE_NODE_ONLY extends RelationMatchState(0)
@@ -39,7 +41,7 @@ final case object MATCHED_TARGET_NODE_ONLY extends RelationMatchState(1)
 final case object NOT_MATCHED extends RelationMatchState(2)
 
 class HomeController @Inject()(val controllerComponents: ControllerComponents) extends BaseController with DeductionUnitController with LazyLogging {
-  def execute() = Action(parse.json) { request =>
+  def execute():Action[JsValue] = Action(parse.json[JsValue])  { request =>
     val transversalState = Json.parse(request.headers.get(TRANSVERSAL_STATE .str).get).as[TransversalState]
     try {
       val json = request.body
@@ -73,8 +75,8 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     val sentenceType = aso.knowledgeBaseSemiGlobalNode.sentenceType
     val sourceKey = edge.sourceId
     val targetKey = edge.destinationId
-    val sourceNode = nodeMap.get(sourceKey).getOrElse().asInstanceOf[KnowledgeBaseNode]
-    val destinationNode = nodeMap.get(targetKey).getOrElse().asInstanceOf[KnowledgeBaseNode]
+    val sourceNode = nodeMap.get(sourceKey).get.asInstanceOf[KnowledgeBaseNode]
+    val destinationNode = nodeMap.get(targetKey).get.asInstanceOf[KnowledgeBaseNode]
 
     val initAcc: List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = sentenceType match {
       case PREMISE.index => {
