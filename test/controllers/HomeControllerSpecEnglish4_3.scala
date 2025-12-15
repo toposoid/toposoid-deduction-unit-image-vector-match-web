@@ -17,7 +17,7 @@
 
 package controllers
 
-import akka.util.Timeout
+import org.apache.pekko.util.Timeout
 import com.ideal.linked.common.DeploymentConverter.conf
 import com.ideal.linked.toposoid.common._
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{PropositionRelation, Reference}
