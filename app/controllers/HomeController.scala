@@ -17,7 +17,7 @@
 
 package controllers
 
-import com.ideal.linked.toposoid.common.{CLAIM, IMAGE, LOCAL, PREDICATE_ARGUMENT, PREMISE, TRANSVERSAL_STATE, ToposoidUtils, TransversalState}
+import com.ideal.linked.toposoid.common.{SentenceType, ScopeType, FeatureType, TRANSVERSAL_STATE, ToposoidUtils, TransversalState}
 import com.ideal.linked.toposoid.deduction.common.DeductionUnitController
 import com.ideal.linked.toposoid.deduction.common.FacadeForAccessNeo4J.getCypherQueryResult
 import com.ideal.linked.toposoid.knowledgebase.model.{KnowledgeBaseEdge, KnowledgeBaseNode}
@@ -51,7 +51,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       //Check if the image exists on asos here　or not.
       if (getAnalyzedSentenceObjectsWithImage(asos).size > 0) {
         val result: List[AnalyzedSentenceObject] = asos.foldLeft(List.empty[AnalyzedSentenceObject]) {
-          (acc, x) => acc :+ analyze(x, acc, "image-vector-match", List(IMAGE.index), transversalState)
+          (acc, x) => acc :+ analyze(x, acc, "image-vector-match", List(FeatureType.IMAGE.index), transversalState)
         }
         logger.info(ToposoidUtils.formatMessageForLogger("deduction completed.", transversalState.userId))
         Ok(Json.toJson(AnalyzedSentenceObjects(result))).as(JSON)
@@ -79,8 +79,8 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     val destinationNode = nodeMap.get(targetKey).get.asInstanceOf[KnowledgeBaseNode]
 
     val initAcc: List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = sentenceType match {
-      case PREMISE.index => {
-        accParent ::: searchMatchRelation(sourceNode, destinationNode, edge.caseStr, CLAIM.index, transversalState)
+      case SentenceType.PREMISE.index => {
+        accParent ::: searchMatchRelation(sourceNode, destinationNode, edge.caseStr,  SentenceType.CLAIM.index, transversalState)
       }
       case _ => accParent
     }
@@ -92,7 +92,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     asos.filter(x => {
       x.nodeMap.filter(y => {
         y._2.localContext.knowledgeFeatureReferences.filter(z => {
-          z.featureType == IMAGE.index
+          z.featureType == FeatureType.IMAGE.index
         }).size > 0
       }).size > 0
     })
@@ -120,7 +120,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
    */
   private def searchMatchRelation(sourceNode: KnowledgeBaseNode, targetNode: KnowledgeBaseNode, caseName: String, sentenceType: Int, transversalState:TransversalState): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
 
-    val nodeType: String = ToposoidUtils.getNodeType(sentenceType, LOCAL.index, PREDICATE_ARGUMENT.index)
+    val nodeType: String = ToposoidUtils.getNodeType(sentenceType, ScopeType.LOCAL.index, FeatureType.PREDICATE_ARGUMENT.index)
     val sourceSurface = sourceNode.predicateArgumentStructure.surface
     val targetSurface = targetNode.predicateArgumentStructure.surface
     //エッジの両側ノードで厳格に一致するものがあるかどうか
@@ -195,7 +195,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
    */
   private def checkImageNode(sourceNode: KnowledgeBaseNode, targetNode: KnowledgeBaseNode, caseName: String, relationMatchState: RelationMatchState, sentenceType: Int, sourceFeatureIds:List[String], targetFeatureIds:List[String], transversalState:TransversalState): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
 
-    val nodeType: String = ToposoidUtils.getNodeType(sentenceType, LOCAL.index, PREDICATE_ARGUMENT.index)
+    val nodeType: String = ToposoidUtils.getNodeType(sentenceType, ScopeType.LOCAL.index, FeatureType.PREDICATE_ARGUMENT.index)
     val query = relationMatchState match {
       case MATCHED_SOURCE_NODE_ONLY => {
         "MATCH (n1:%s)-[e]-(n2:%s)<-[ie:ImageEdge]-(in2:ImageNode) WHERE n1.normalizedName='%s' AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND in2.featureId IN %s RETURN n1, ie, in2".format(nodeType, nodeType, sourceNode.predicateArgumentStructure.normalizedName, sourceNode.predicateArgumentStructure.isDenialWord, caseName, targetNode.predicateArgumentStructure.isDenialWord, "[%s]".format(targetFeatureIds.map("'%s'".format(_)).mkString(",")))
