@@ -36,6 +36,7 @@ import play.api.test._
 
 import scala.concurrent.duration.DurationInt
 import com.ideal.linked.toposoid.common.ActionModeType
+import com.ideal.linked.toposoid.protocol.model.base.VerifyingEdges
 
 class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with BeforeAndAfterAll with GuiceOneAppPerSuite with DefaultAwaitTimeout with Injecting {
 
