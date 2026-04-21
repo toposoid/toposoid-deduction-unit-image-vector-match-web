@@ -18,8 +18,6 @@
 package controllers
 
 import com.ideal.linked.toposoid.common.{SentenceType, ScopeType, FeatureType, TRANSVERSAL_STATE, ToposoidUtils, TransversalState}
-import com.ideal.linked.toposoid.deduction.common.DeductionUnitController
-import com.ideal.linked.toposoid.deduction.common.FacadeForAccessNeo4J.getCypherQueryResult
 import com.ideal.linked.toposoid.knowledgebase.model.{KnowledgeBaseEdge, KnowledgeBaseNode}
 import com.ideal.linked.toposoid.protocol.model.base.{AnalyzedSentenceObject, AnalyzedSentenceObjects, CoveredPropositionEdge, CoveredPropositionNode, KnowledgeBaseSideInfo, MatchedFeatureInfo}
 import com.ideal.linked.toposoid.protocol.model.neo4j.Neo4jRecords
@@ -34,20 +32,35 @@ import play.api._
 import play.api.mvc._
 import play.api.libs.json.JsValue
 
+import scala.util.{Failure, Success, Try}
+import com.ideal.linked.toposoid.protocol.model.base.DeductionResult
+import com.ideal.linked.toposoid.common.Neo4JUtilsImpl
+import com.ideal.linked.toposoid.protocol.model.base.VerifyingEdges
+import com.ideal.linked.toposoid.common.DeductionUtils
+import scala.concurrent.Future
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+import com.ideal.linked.toposoid.common.RelationMatchState
+import com.ideal.linked.toposoid.protocol.model.base.MatchedKnowledgeNode
+import com.ideal.linked.toposoid.knowledgebase.model.KnowledgeFeatureReference
+import com.ideal.linked.common.DeploymentConverter.conf
 
+/*
 sealed abstract class RelationMatchState(val index: Int)
 final case object MATCHED_SOURCE_NODE_ONLY extends RelationMatchState(0)
 final case object MATCHED_TARGET_NODE_ONLY extends RelationMatchState(1)
 final case object NOT_MATCHED extends RelationMatchState(2)
+*/
 
-class HomeController @Inject()(val controllerComponents: ControllerComponents) extends BaseController with DeductionUnitController with LazyLogging {
+class HomeController @Inject()(val controllerComponents: ControllerComponents) extends BaseController /*with DeductionUnitController*/ with LazyLogging {
   def execute():Action[JsValue] = Action(parse.json[JsValue])  { request =>
     val transversalState = Json.parse(request.headers.get(TRANSVERSAL_STATE .str).get).as[TransversalState]
     try {
       val json = request.body
       val analyzedSentenceObjects: AnalyzedSentenceObjects = Json.parse(json.toString).as[AnalyzedSentenceObjects]
       val asos: List[AnalyzedSentenceObject] = analyzedSentenceObjects.analyzedSentenceObjects
-
+      /*
       //Check if the image exists on asos here　or not.
       if (getAnalyzedSentenceObjectsWithImage(asos).size > 0) {
         val result: List[AnalyzedSentenceObject] = asos.foldLeft(List.empty[AnalyzedSentenceObject]) {
@@ -59,7 +72,19 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
         logger.info(ToposoidUtils.formatMessageForLogger("deduction skipped[No Images].", transversalState.userId))
         Ok(Json.toJson(analyzedSentenceObjects)).as(JSON)
       }
-
+      */
+      val result:List[VerifyingEdges] = asos.foldLeft(List.empty[VerifyingEdges]){
+        (acc, aso) => {          
+          acc :+ VerifyingEdges(
+            propositionId = aso.knowledgeBaseSemiGlobalNode.propositionId,
+            sentenceId = aso.knowledgeBaseSemiGlobalNode.sentenceId,
+            //coveredPropositionEdges = analyzeGraphKnowledge(DeductionUtils.getUnsettledEdges(aso), aso, transversalState)
+            coveredPropositionEdges = analyzeGraphKnowledge(DeductionUtils.getUnsettledEdges(aso), aso, transversalState)
+          )
+        }
+      }
+      logger.info(ToposoidUtils.formatMessageForLogger("Synonym edge analysis completed.", transversalState.userId))    
+      Ok(Json.toJson(result)).as(JSON)      
     } catch {
       case e: Exception => {
         logger.error(ToposoidUtils.formatMessageForLogger(e.toString, transversalState.userId), e)
@@ -68,7 +93,52 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     }
   }
 
+  private def analyzeEdge(edge:KnowledgeBaseEdge, aso:AnalyzedSentenceObject, transversalState:TransversalState):Option[CoveredPropositionEdge] = {
+    val nodeMap: Map[String, KnowledgeBaseNode] =  aso.nodeMap    
+    val deductionResult:DeductionResult = aso.deductionResult
+    val neo4JUtils = Neo4JUtilsImpl()
+    val sourceKey = edge.sourceId
+    val targetKey = edge.destinationId
+    val sourceNode = nodeMap.get(sourceKey).get.asInstanceOf[KnowledgeBaseNode]
+    val destinationNode = nodeMap.get(targetKey).get.asInstanceOf[KnowledgeBaseNode]
+    val deductionUnitName = conf.getString("TOPOSOID_DEDUCTION_UNIT_NAME")
 
+    //sentenceIdも絞り込めるがどうするか？  
+    val coveredPropositionEdges = aso.deductionResult.coveredPropositionEdges.filter(x => {
+      x.sourceNode.terminalId.equals(sourceKey) && x.destinationNode.terminalId.equals(targetKey)
+    })
+
+    if(coveredPropositionEdges.size == 0) {
+      None
+    }else{
+      val coveredPropositionEdge = coveredPropositionEdges.head
+      val nodeType: String = ToposoidUtils.getNodeType(SentenceType.CLAIM.index, ScopeType.LOCAL.index, FeatureType.PREDICATE_ARGUMENT.index)
+    
+      if(coveredPropositionEdge.sourceNode.isConfirmed && !coveredPropositionEdge.destinationNode.isConfirmed){
+        Option(coveredPropositionEdge)
+      }else if(!coveredPropositionEdge.sourceNode.isConfirmed && coveredPropositionEdge.destinationNode.isConfirmed){
+        Option(coveredPropositionEdge)
+      }else if(!coveredPropositionEdge.sourceNode.isConfirmed && !coveredPropositionEdge.destinationNode.isConfirmed){
+        Option(coveredPropositionEdge)
+      }else{
+        Option(coveredPropositionEdge)
+      }
+    }
+  }
+
+  private def analyzeGraphKnowledge(edges: List[KnowledgeBaseEdge], aso:AnalyzedSentenceObject, transversalState:TransversalState):List[CoveredPropositionEdge] = {
+    
+    val futures: List[Future[Option[CoveredPropositionEdge]]] = edges.foldLeft(List.empty[Future[Option[CoveredPropositionEdge]]]){
+      (acc, edge) => {
+        acc :+ Future(analyzeEdge(edge:KnowledgeBaseEdge, aso:AnalyzedSentenceObject, transversalState))
+      }
+    }    
+    val combinedFuture: Future[List[Option[CoveredPropositionEdge]]] = Future.sequence(futures)
+    val result = Await.result(combinedFuture, Duration.Inf)    
+    result.flatten
+  }
+
+  /*
   def analyzeGraphKnowledge(edge: KnowledgeBaseEdge, aso: AnalyzedSentenceObject, accParent: List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)], transversalState:TransversalState): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
 
     val nodeMap: Map[String, KnowledgeBaseNode] = aso.nodeMap
@@ -87,6 +157,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     initAcc ::: searchMatchRelation(sourceNode, destinationNode, edge.caseStr, sentenceType, transversalState)
 
   }
+  */
 
   private def getAnalyzedSentenceObjectsWithImage(asos: List[AnalyzedSentenceObject]): List[AnalyzedSentenceObject] = {
     asos.filter(x => {
@@ -118,6 +189,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
    * @param caseName
    * @return
    */
+  /*
   private def searchMatchRelation(sourceNode: KnowledgeBaseNode, targetNode: KnowledgeBaseNode, caseName: String, sentenceType: Int, transversalState:TransversalState): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
 
     val nodeType: String = ToposoidUtils.getNodeType(sentenceType, ScopeType.LOCAL.index, FeatureType.PREDICATE_ARGUMENT.index)
@@ -155,7 +227,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     }
     //return (axiomIds, searchResults)
   }
-
+  */
   /**
    * This function gets the proposition ID contained in the result of querying Neo4J
    *
@@ -164,6 +236,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
    * @param tragetKey
    * @return
    */
+  /*
   private def getKnowledgeBaseSideInfo(neo4jRecords: Neo4jRecords, sourceProblemNode: KnowledgeBaseNode, targetProblemNode: KnowledgeBaseNode): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
     neo4jRecords.records.foldLeft(List.empty[(KnowledgeBaseSideInfo, CoveredPropositionEdge)]) {
       (acc, x) => {
@@ -183,7 +256,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       }
     }
   }
-
+  */
   /**
    * Check if it is logically valid even if replaced with synonyms
    *
@@ -193,6 +266,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
    * @param relationMatchState
    * @return
    */
+  /*
   private def checkImageNode(sourceNode: KnowledgeBaseNode, targetNode: KnowledgeBaseNode, caseName: String, relationMatchState: RelationMatchState, sentenceType: Int, sourceFeatureIds:List[String], targetFeatureIds:List[String], transversalState:TransversalState): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
 
     val nodeType: String = ToposoidUtils.getNodeType(sentenceType, ScopeType.LOCAL.index, FeatureType.PREDICATE_ARGUMENT.index)
@@ -216,5 +290,5 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       getKnowledgeBaseSideInfo(Json.parse(resultJson).as[Neo4jRecords], sourceNode, targetNode)
     }
   }
-
+  */
 }

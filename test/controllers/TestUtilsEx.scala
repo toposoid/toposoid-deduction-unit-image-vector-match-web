@@ -138,6 +138,6 @@ object TestUtilsEx extends LazyLogging {
           deductionResult = x.deductionResult)
       }
     }
-    Json.toJson(AnalyzedSentenceObjects(updatedAsos)).toString()
+    Json.toJson(AnalyzedSentenceObjects(updatedAsos, asos.deductionConfiguration)).toString()
   }
 }
