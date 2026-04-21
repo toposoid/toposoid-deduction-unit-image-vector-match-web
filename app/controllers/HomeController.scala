@@ -125,7 +125,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
         val sourceAlias = "n1"
         val destinationAlias = "n2ext"
         val featureIds = getSimilarImage(destinationNode, SentenceType.CLAIM.index, transversalState) 
-        val querySourceOnly = "MATCH (n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE n1..surface=\"%s\" AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN n1, ie, n2ext".format(nodeType, nodeType, sourceNode.predicateArgumentStructure.surface, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(featureIds.map("'%s'".format(_)).mkString(",")))        
+        val querySourceOnly = "MATCH (n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE n1..surface=\"%s\" AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN n1, e, n2ext".format(nodeType, nodeType, sourceNode.predicateArgumentStructure.surface, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(featureIds.map("'%s'".format(_)).mkString(",")))        
         logger.debug(querySourceOnly)
         val jsonStr: String = neo4JUtils.getCypherQueryResult(querySourceOnly, "", transversalState)
         if (!jsonStr.equals("""{"records":[]}""")) {
@@ -139,7 +139,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
         val sourceAlias = "n1ext"
         val destinationAlias = "n2"
         val featureIds = getSimilarImage(sourceNode, SentenceType.CLAIM.index, transversalState) 
-        val queryTargetOnly = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.surface=\"%s\" RETURN n1ext, ie, n2".format(nodeType, nodeType, "[%s]".format(featureIds.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.surface)
+        val queryTargetOnly = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.surface=\"%s\" RETURN n1ext, e, n2".format(nodeType, nodeType, "[%s]".format(featureIds.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.surface)
         logger.debug(queryTargetOnly)
         val jsonStr: String = neo4JUtils.getCypherQueryResult(queryTargetOnly, "", transversalState)
         if (!jsonStr.equals("""{"records":[]}""")) {
@@ -154,7 +154,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
         val destinationAlias = "n2ext"
         val sourceFeatureIds = getSimilarImage(sourceNode, SentenceType.CLAIM.index, transversalState) 
         val destinationFeatureIds = getSimilarImage(sourceNode, SentenceType.CLAIM.index, transversalState) 
-        val queryBothReplacement = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]->(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(next2:ImageNode) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN in1, e, in2".format(nodeType, nodeType, "[%s]".format(sourceFeatureIds.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(destinationFeatureIds.map("'%s'".format(_)).mkString(",")))
+        val queryBothReplacement = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]->(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(next2:ImageNode) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN n1ext, e, n2ext".format(nodeType, nodeType, "[%s]".format(sourceFeatureIds.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(destinationFeatureIds.map("'%s'".format(_)).mkString(",")))
               logger.debug(queryBothReplacement)
         val jsonStr: String = neo4JUtils.getCypherQueryResult(queryBothReplacement, "", transversalState)
         //If there is even one that does not match, it is useless to search further

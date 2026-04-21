@@ -120,13 +120,13 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       val updatedAsosJson = TestUtils.analyzeByBaseDeductionUnit(json, transversalState)
       val fr = FakeRequest(POST, "/execute")
         .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> transversalStateJson)
-        .withJsonBody(Json.parse(json))
+        .withJsonBody(Json.parse(updatedAsosJson))
       val result = call(controller.execute(), fr)
       status(result) mustBe OK
       contentType(result) mustBe Some("application/json")
       val jsonResult: String = contentAsJson(result).toString()
       val verifyingEdgesList: List[VerifyingEdges] = Json.parse(jsonResult).as[List[VerifyingEdges]]
-      assert(verifyingEdgesList.map(x => x.coveredPropositionEdges.size).sum == 2)
+      assert(verifyingEdgesList.map(x => x.coveredPropositionEdges.size).sum == 1)
     }
   }
   /*
