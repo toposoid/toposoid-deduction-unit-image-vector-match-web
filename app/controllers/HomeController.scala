@@ -73,18 +73,25 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
         Ok(Json.toJson(analyzedSentenceObjects)).as(JSON)
       }
       */
-      val result:List[VerifyingEdges] = asos.foldLeft(List.empty[VerifyingEdges]){
-        (acc, aso) => {          
-          acc :+ VerifyingEdges(
-            propositionId = aso.knowledgeBaseSemiGlobalNode.propositionId,
-            sentenceId = aso.knowledgeBaseSemiGlobalNode.sentenceId,
-            //coveredPropositionEdges = analyzeGraphKnowledge(DeductionUtils.getUnsettledEdges(aso), aso, transversalState)
-            coveredPropositionEdges = analyzeGraphKnowledge(DeductionUtils.getUnsettledEdges(aso), aso, transversalState)
-          )
+      //Check if the image exists on asos here　or not.
+      if (getAnalyzedSentenceObjectsWithImage(asos).size > 0) {
+
+        val result:List[VerifyingEdges] = asos.foldLeft(List.empty[VerifyingEdges]){
+          (acc, aso) => {          
+            acc :+ VerifyingEdges(
+              propositionId = aso.knowledgeBaseSemiGlobalNode.propositionId,
+              sentenceId = aso.knowledgeBaseSemiGlobalNode.sentenceId,
+              //coveredPropositionEdges = analyzeGraphKnowledge(DeductionUtils.getUnsettledEdges(aso), aso, transversalState)
+              coveredPropositionEdges = analyzeGraphKnowledge(DeductionUtils.getUnsettledEdges(aso), aso, transversalState)
+            )
+          }
         }
-      }
-      logger.info(ToposoidUtils.formatMessageForLogger("Synonym edge analysis completed.", transversalState.userId))    
-      Ok(Json.toJson(result)).as(JSON)      
+        logger.info(ToposoidUtils.formatMessageForLogger("Image edge analysis completed.", transversalState.userId))    
+        Ok(Json.toJson(result)).as(JSON)  
+      } else {
+        logger.info(ToposoidUtils.formatMessageForLogger("deduction skipped[No Images].", transversalState.userId))
+        Ok(Json.toJson(analyzedSentenceObjects)).as(JSON) 
+      }    
     } catch {
       case e: Exception => {
         logger.error(ToposoidUtils.formatMessageForLogger(e.toString, transversalState.userId), e)
@@ -113,13 +120,52 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     }else{
       val coveredPropositionEdge = coveredPropositionEdges.head
       val nodeType: String = ToposoidUtils.getNodeType(SentenceType.CLAIM.index, ScopeType.LOCAL.index, FeatureType.PREDICATE_ARGUMENT.index)
-    
+      //PremiseのSentenceTypeが何故必要？ → 一旦、Premiseなしでやってみる。
       if(coveredPropositionEdge.sourceNode.isConfirmed && !coveredPropositionEdge.destinationNode.isConfirmed){
-        Option(coveredPropositionEdge)
+        val sourceAlias = "n1"
+        val destinationAlias = "n2ext"
+        val featureIds = getSimilarImage(destinationNode, SentenceType.CLAIM.index, transversalState) 
+        val querySourceOnly = "MATCH (n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE n1..surface=\"%s\" AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN n1, ie, n2ext".format(nodeType, nodeType, sourceNode.predicateArgumentStructure.surface, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(featureIds.map("'%s'".format(_)).mkString(",")))        
+        logger.debug(querySourceOnly)
+        val jsonStr: String = neo4JUtils.getCypherQueryResult(querySourceOnly, "", transversalState)
+        if (!jsonStr.equals("""{"records":[]}""")) {
+          //ヒットするものがある場合
+          val neo4jRecords: Neo4jRecords = Json.parse(jsonStr).as[Neo4jRecords]              
+          Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH, deductionUnitName))     
+        }else{
+          Option(coveredPropositionEdge)
+        }        
       }else if(!coveredPropositionEdge.sourceNode.isConfirmed && coveredPropositionEdge.destinationNode.isConfirmed){
-        Option(coveredPropositionEdge)
+        val sourceAlias = "n1ext"
+        val destinationAlias = "n2"
+        val featureIds = getSimilarImage(sourceNode, SentenceType.CLAIM.index, transversalState) 
+        val queryTargetOnly = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.surface=\"%s\" RETURN n1ext, ie, n2".format(nodeType, nodeType, "[%s]".format(featureIds.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.surface)
+        logger.debug(queryTargetOnly)
+        val jsonStr: String = neo4JUtils.getCypherQueryResult(queryTargetOnly, "", transversalState)
+        if (!jsonStr.equals("""{"records":[]}""")) {
+          //ヒットするものがある場合
+          val neo4jRecords: Neo4jRecords = Json.parse(jsonStr).as[Neo4jRecords]              
+          Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH, deductionUnitName))     
+        }else{
+          Option(coveredPropositionEdge)
+        }        
       }else if(!coveredPropositionEdge.sourceNode.isConfirmed && !coveredPropositionEdge.destinationNode.isConfirmed){
-        Option(coveredPropositionEdge)
+        val sourceAlias = "n1ext"
+        val destinationAlias = "n2ext"
+        val sourceFeatureIds = getSimilarImage(sourceNode, SentenceType.CLAIM.index, transversalState) 
+        val destinationFeatureIds = getSimilarImage(sourceNode, SentenceType.CLAIM.index, transversalState) 
+        val queryBothReplacement = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]->(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(next2:ImageNode) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN in1, e, in2".format(nodeType, nodeType, "[%s]".format(sourceFeatureIds.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(destinationFeatureIds.map("'%s'".format(_)).mkString(",")))
+              logger.debug(queryBothReplacement)
+        val jsonStr: String = neo4JUtils.getCypherQueryResult(queryBothReplacement, "", transversalState)
+        //If there is even one that does not match, it is useless to search further
+        if (!jsonStr.equals("""{"records":[]}""")) {
+          //ヒットするものがある場合
+          val neo4jRecords: Neo4jRecords = Json.parse(jsonStr).as[Neo4jRecords]
+          //Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH))     
+          Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH, deductionUnitName))     
+        }else{
+          Option(coveredPropositionEdge)
+        }        
       }else{
         Option(coveredPropositionEdge)
       }
