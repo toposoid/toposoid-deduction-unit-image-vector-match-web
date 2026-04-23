@@ -76,7 +76,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
         Ok(Json.toJson(result)).as(JSON)  
       } else {
         logger.info(ToposoidUtils.formatMessageForLogger("deduction skipped[No Images].", transversalState.userId))
-        Ok(Json.toJson(analyzedSentenceObjects)).as(JSON) 
+        Ok(Json.toJson(List.empty[VerifyingEdges])).as(JSON) 
       }    
     } catch {
       case e: Exception => {
@@ -150,6 +150,46 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
         val sourceFeatureSimilarityMap = getSimilarImage(sourceNode, SentenceType.CLAIM.index, transversalState) 
         val destinationFeatureSimilarityMap = getSimilarImage(destinationNode, SentenceType.CLAIM.index, transversalState) 
         //val queryBothReplacement = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]->(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN n1ext, e, n2ext".format(nodeType, nodeType, "[%s]".format(sourceFeatureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(destinationFeatureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")))
+        
+        sourceFeatureSimilarityMap.size + destinationFeatureSimilarityMap.size match {
+          case 0 => Option(coveredPropositionEdge)
+          case _ => {
+            val queryBothReplacement = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]->(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN n1ext, e, n2ext".format(nodeType, nodeType, "[%s]".format(sourceFeatureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(destinationFeatureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")))
+            logger.debug(queryBothReplacement)
+            val jsonStr: String = neo4JUtils.getCypherQueryResult(queryBothReplacement, "", transversalState)
+            //If there is even one that does not match, it is useless to search further
+            if (!jsonStr.equals("""{"records":[]}""")) {
+              //ヒットするものがある場合
+              val neo4jRecords: Neo4jRecords = Json.parse(jsonStr).as[Neo4jRecords]
+              //Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH))     
+              Option(DeductionUtils.getCoveredPropositionEdge(edge, "n1ext", "n2ext", nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH, deductionUnitName, sourceFeatureSimilarityMap++destinationFeatureSimilarityMap))     
+            }else{
+              val queryBothReplacement = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' RETURN n1ext, e, n2".format(nodeType, nodeType, "[%s]".format(sourceFeatureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord)
+              val jsonStr: String = neo4JUtils.getCypherQueryResult(queryBothReplacement, "", transversalState)
+              //If there is even one that does not match, it is useless to search further
+              if (!jsonStr.equals("""{"records":[]}""")) {
+                //ヒットするものがある場合
+                val neo4jRecords: Neo4jRecords = Json.parse(jsonStr).as[Neo4jRecords]
+                //Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH))     
+                Option(DeductionUtils.getCoveredPropositionEdge(edge, "n1ext", "n2", nodeMap,  neo4jRecords, RelationMatchState.MATCHED_SOURCE_NODE_ONLY, deductionUnitName, sourceFeatureSimilarityMap++destinationFeatureSimilarityMap))     
+              }else{
+                val queryBothReplacement = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN n1, e, n2ext".format(nodeType, nodeType, sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(destinationFeatureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")))
+                val jsonStr: String = neo4JUtils.getCypherQueryResult(queryBothReplacement, "", transversalState)
+                //If there is even one that does not match, it is useless to search further
+                if (!jsonStr.equals("""{"records":[]}""")) {
+                  //ヒットするものがある場合
+                  val neo4jRecords: Neo4jRecords = Json.parse(jsonStr).as[Neo4jRecords]
+                  //Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH))     
+                  Option(DeductionUtils.getCoveredPropositionEdge(edge, "n1", "n2ext", nodeMap,  neo4jRecords, RelationMatchState.MATCHED_TARGET_NODE_ONLY, deductionUnitName, sourceFeatureSimilarityMap++destinationFeatureSimilarityMap))     
+                }else{
+                  Option(coveredPropositionEdge) 
+                }
+              }
+            }        
+          }
+        }
+        
+        /*
         val (queryBothReplacement,relationMatchState, sourceAlias, destinationAlias) = sourceFeatureSimilarityMap.size + destinationFeatureSimilarityMap.size match {
           case 0 => ("", RelationMatchState.NOT_MATCHED_BOTH, "", "")
           case _ => {
@@ -178,7 +218,8 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
           }else{
             Option(coveredPropositionEdge)
           }        
-        }  
+        } */
+        //Option(coveredPropositionEdge)
       }else{
         Option(coveredPropositionEdge)
       }
