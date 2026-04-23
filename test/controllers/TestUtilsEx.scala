@@ -67,23 +67,34 @@ object TestUtilsEx extends LazyLogging {
     uuid
   }
 
-
   def getKnowledge(lang:String, sentence: String, reference: Reference, imageBoxInfo: ImageBoxInfo, transversalState: TransversalState): Knowledge = {
     Knowledge(sentence, lang, "{}", false, List(getImageInfo(reference, imageBoxInfo, transversalState)))
   }
 
   def getImageInfo(reference: Reference, imageBoxInfo: ImageBoxInfo, transversalState: TransversalState): KnowledgeForImage = {
-    val imageReference = ImageReference(reference: Reference, imageBoxInfo.x, imageBoxInfo.y, imageBoxInfo.weight, imageBoxInfo.height)
-    val knowledgeForImage = KnowledgeForImage(id = getUUID(), imageReference = imageReference)
-    val registContentResultJson = ToposoidUtils.callComponent(
-      Json.toJson(knowledgeForImage).toString(),
-      conf.getString("TOPOSOID_CONTENTS_ADMIN_HOST"),
-      conf.getString("TOPOSOID_CONTENTS_ADMIN_PORT"),
-      "registImage",
-      transversalState)
+    getImageInfo2(List((reference, imageBoxInfo)), transversalState).head
+  }
 
-    val registContentResult: RegistContentResult = Json.parse(registContentResultJson).as[RegistContentResult]
-    registContentResult.knowledgeForImage
+  def getKnowledge2(lang:String, sentence: String, imageInfoList:List[(Reference, ImageBoxInfo)],transversalState: TransversalState): Knowledge = {
+    Knowledge(sentence, lang, "{}", false, getImageInfo2(imageInfoList, transversalState))
+  }
+
+  def getImageInfo2(imageInfoList:List[(Reference, ImageBoxInfo)], transversalState: TransversalState): List[KnowledgeForImage] = {
+
+    imageInfoList.map(x => {
+      val reference = x._1
+      val imageBoxInfo = x._2
+      val imageReference = ImageReference(reference: Reference, imageBoxInfo.x, imageBoxInfo.y, imageBoxInfo.weight, imageBoxInfo.height)
+      val knowledgeForImage = KnowledgeForImage(id = getUUID(), imageReference = imageReference)
+      val registContentResultJson = ToposoidUtils.callComponent(
+        Json.toJson(knowledgeForImage).toString(),
+        conf.getString("TOPOSOID_CONTENTS_ADMIN_HOST"),
+        conf.getString("TOPOSOID_CONTENTS_ADMIN_PORT"),
+        "registImage",
+        transversalState)
+      val registContentResult: RegistContentResult = Json.parse(registContentResultJson).as[RegistContentResult]
+      registContentResult.knowledgeForImage
+    })
   }
 
   def addImageInfoToAnalyzedSentenceObjects(lang:String,inputSentence: String, knowledgeForImages: List[KnowledgeForImage], transversalState: TransversalState): String = {

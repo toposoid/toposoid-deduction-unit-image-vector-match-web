@@ -60,19 +60,6 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       val json = request.body
       val analyzedSentenceObjects: AnalyzedSentenceObjects = Json.parse(json.toString).as[AnalyzedSentenceObjects]
       val asos: List[AnalyzedSentenceObject] = analyzedSentenceObjects.analyzedSentenceObjects
-      /*
-      //Check if the image exists on asos here　or not.
-      if (getAnalyzedSentenceObjectsWithImage(asos).size > 0) {
-        val result: List[AnalyzedSentenceObject] = asos.foldLeft(List.empty[AnalyzedSentenceObject]) {
-          (acc, x) => acc :+ analyze(x, acc, "image-vector-match", List(FeatureType.IMAGE.index), transversalState)
-        }
-        logger.info(ToposoidUtils.formatMessageForLogger("deduction completed.", transversalState.userId))
-        Ok(Json.toJson(AnalyzedSentenceObjects(result))).as(JSON)
-      }else{
-        logger.info(ToposoidUtils.formatMessageForLogger("deduction skipped[No Images].", transversalState.userId))
-        Ok(Json.toJson(analyzedSentenceObjects)).as(JSON)
-      }
-      */
       //Check if the image exists on asos here　or not.
       if (getAnalyzedSentenceObjectsWithImage(asos).size > 0) {
 
@@ -81,7 +68,6 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
             acc :+ VerifyingEdges(
               propositionId = aso.knowledgeBaseSemiGlobalNode.propositionId,
               sentenceId = aso.knowledgeBaseSemiGlobalNode.sentenceId,
-              //coveredPropositionEdges = analyzeGraphKnowledge(DeductionUtils.getUnsettledEdges(aso), aso, transversalState)
               coveredPropositionEdges = analyzeGraphKnowledge(DeductionUtils.getUnsettledEdges(aso), aso, transversalState)
             )
           }
@@ -125,47 +111,74 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
         val sourceAlias = "n1"
         val destinationAlias = "n2ext"
         val featureSimilarityMap = getSimilarImage(destinationNode, SentenceType.CLAIM.index, transversalState) 
-        val querySourceOnly = "MATCH (n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE n1..surface=\"%s\" AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN n1, e, n2ext".format(nodeType, nodeType, sourceNode.predicateArgumentStructure.surface, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(featureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")))        
-        logger.debug(querySourceOnly)
-        val jsonStr: String = neo4JUtils.getCypherQueryResult(querySourceOnly, "", transversalState)
-        if (!jsonStr.equals("""{"records":[]}""")) {
-          //ヒットするものがある場合
-          val neo4jRecords: Neo4jRecords = Json.parse(jsonStr).as[Neo4jRecords]              
-          Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH, deductionUnitName, featureSimilarityMap))     
-        }else{
-          Option(coveredPropositionEdge)
-        }        
+        featureSimilarityMap.size match {
+          case 0 => Option(coveredPropositionEdge)
+          case _ => {
+            val querySourceOnly = "MATCH (n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE n1.surface=\"%s\" AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN n1, e, n2ext".format(nodeType, nodeType, sourceNode.predicateArgumentStructure.surface, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(featureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")))        
+            logger.debug(querySourceOnly)
+            val jsonStr: String = neo4JUtils.getCypherQueryResult(querySourceOnly, "", transversalState)
+            if (!jsonStr.equals("""{"records":[]}""")) {
+              //ヒットするものがある場合
+              val neo4jRecords: Neo4jRecords = Json.parse(jsonStr).as[Neo4jRecords]              
+              Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH, deductionUnitName, featureSimilarityMap))     
+            }else{
+              Option(coveredPropositionEdge)
+            }        
+          }
+        }
       }else if(!coveredPropositionEdge.sourceNode.isConfirmed && coveredPropositionEdge.destinationNode.isConfirmed){
         val sourceAlias = "n1ext"
         val destinationAlias = "n2"
         val featureSimilarityMap = getSimilarImage(sourceNode, SentenceType.CLAIM.index, transversalState) 
-        val queryTargetOnly = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.surface=\"%s\" RETURN n1ext, e, n2".format(nodeType, nodeType, "[%s]".format(featureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.surface)
-        logger.debug(queryTargetOnly)
-        val jsonStr: String = neo4JUtils.getCypherQueryResult(queryTargetOnly, "", transversalState)
-        if (!jsonStr.equals("""{"records":[]}""")) {
-          //ヒットするものがある場合
-          val neo4jRecords: Neo4jRecords = Json.parse(jsonStr).as[Neo4jRecords]              
-          Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH, deductionUnitName, featureSimilarityMap))     
-        }else{
-          Option(coveredPropositionEdge)
-        }        
+        featureSimilarityMap.size match {
+          case 0 => Option(coveredPropositionEdge)
+          case _ => {
+            val queryTargetOnly = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.surface=\"%s\" RETURN n1ext, e, n2".format(nodeType, nodeType, "[%s]".format(featureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.surface)
+            logger.debug(queryTargetOnly)
+            val jsonStr: String = neo4JUtils.getCypherQueryResult(queryTargetOnly, "", transversalState)
+            if (!jsonStr.equals("""{"records":[]}""")) {
+              //ヒットするものがある場合
+              val neo4jRecords: Neo4jRecords = Json.parse(jsonStr).as[Neo4jRecords]              
+              Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH, deductionUnitName, featureSimilarityMap))     
+            }else{
+              Option(coveredPropositionEdge)
+            }          
+          }
+        }
       }else if(!coveredPropositionEdge.sourceNode.isConfirmed && !coveredPropositionEdge.destinationNode.isConfirmed){
-        val sourceAlias = "n1ext"
-        val destinationAlias = "n2ext"
+
         val sourceFeatureSimilarityMap = getSimilarImage(sourceNode, SentenceType.CLAIM.index, transversalState) 
-        val destinationFeatureSimilarityMap = getSimilarImage(sourceNode, SentenceType.CLAIM.index, transversalState) 
-        val queryBothReplacement = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]->(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(next2:ImageNode) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN n1ext, e, n2ext".format(nodeType, nodeType, "[%s]".format(sourceFeatureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(destinationFeatureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")))
-              logger.debug(queryBothReplacement)
-        val jsonStr: String = neo4JUtils.getCypherQueryResult(queryBothReplacement, "", transversalState)
-        //If there is even one that does not match, it is useless to search further
-        if (!jsonStr.equals("""{"records":[]}""")) {
-          //ヒットするものがある場合
-          val neo4jRecords: Neo4jRecords = Json.parse(jsonStr).as[Neo4jRecords]
-          //Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH))     
-          Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH, deductionUnitName, sourceFeatureSimilarityMap++destinationFeatureSimilarityMap))     
+        val destinationFeatureSimilarityMap = getSimilarImage(destinationNode, SentenceType.CLAIM.index, transversalState) 
+        //val queryBothReplacement = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]->(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN n1ext, e, n2ext".format(nodeType, nodeType, "[%s]".format(sourceFeatureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(destinationFeatureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")))
+        val (queryBothReplacement,relationMatchState, sourceAlias, destinationAlias) = sourceFeatureSimilarityMap.size + destinationFeatureSimilarityMap.size match {
+          case 0 => ("", RelationMatchState.NOT_MATCHED_BOTH, "", "")
+          case _ => {
+            if(sourceFeatureSimilarityMap.size > 0){
+              if(destinationFeatureSimilarityMap.size > 0){
+                ("MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]->(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN n1ext, e, n2ext".format(nodeType, nodeType, "[%s]".format(sourceFeatureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(destinationFeatureSimilarityMap.keys.map("'%s'".format(_)).mkString(","))), RelationMatchState.MATCHED_BOTH, "n1ext", "n2ext")
+              }else{
+                ("MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE n1ext.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' RETURN n1ext, e, n2".format(nodeType, nodeType, "[%s]".format(sourceFeatureSimilarityMap.keys.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord), RelationMatchState.MATCHED_SOURCE_NODE_ONLY, "n1ext", "n2")
+              }
+            }else {
+              ("MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2ext.featureId IN %s RETURN n1, e, n2ext".format(nodeType, nodeType, sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, "[%s]".format(destinationFeatureSimilarityMap.keys.map("'%s'".format(_)).mkString(","))), RelationMatchState.MATCHED_TARGET_NODE_ONLY, "n1", "n2ext")        
+            }
+          }
+        }          
+        if(queryBothReplacement.equals("")){
+          Option(coveredPropositionEdge)        
         }else{
-          Option(coveredPropositionEdge)
-        }        
+          logger.debug(queryBothReplacement)
+          val jsonStr: String = neo4JUtils.getCypherQueryResult(queryBothReplacement, "", transversalState)
+          //If there is even one that does not match, it is useless to search further
+          if (!jsonStr.equals("""{"records":[]}""")) {
+            //ヒットするものがある場合
+            val neo4jRecords: Neo4jRecords = Json.parse(jsonStr).as[Neo4jRecords]
+            //Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, RelationMatchState.MATCHED_BOTH))     
+            Option(DeductionUtils.getCoveredPropositionEdge(edge, sourceAlias, destinationAlias, nodeMap,  neo4jRecords, relationMatchState, deductionUnitName, sourceFeatureSimilarityMap++destinationFeatureSimilarityMap))     
+          }else{
+            Option(coveredPropositionEdge)
+          }        
+        }  
       }else{
         Option(coveredPropositionEdge)
       }
@@ -184,27 +197,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     result.flatten
   }
 
-  /*
-  def analyzeGraphKnowledge(edge: KnowledgeBaseEdge, aso: AnalyzedSentenceObject, accParent: List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)], transversalState:TransversalState): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
-
-    val nodeMap: Map[String, KnowledgeBaseNode] = aso.nodeMap
-    val sentenceType = aso.knowledgeBaseSemiGlobalNode.sentenceType
-    val sourceKey = edge.sourceId
-    val targetKey = edge.destinationId
-    val sourceNode = nodeMap.get(sourceKey).get.asInstanceOf[KnowledgeBaseNode]
-    val destinationNode = nodeMap.get(targetKey).get.asInstanceOf[KnowledgeBaseNode]
-
-    val initAcc: List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = sentenceType match {
-      case SentenceType.PREMISE.index => {
-        accParent ::: searchMatchRelation(sourceNode, destinationNode, edge.caseStr,  SentenceType.CLAIM.index, transversalState)
-      }
-      case _ => accParent
-    }
-    initAcc ::: searchMatchRelation(sourceNode, destinationNode, edge.caseStr, sentenceType, transversalState)
-
-  }
-  */
-
+  
   private def getAnalyzedSentenceObjectsWithImage(asos: List[AnalyzedSentenceObject]): List[AnalyzedSentenceObject] = {
     asos.filter(x => {
       x.nodeMap.filter(y => {
@@ -226,115 +219,4 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       acc ++ result.ids.zip(result.similarities).filter(y => y._1.sentenceType == sentenceType).map( z => ( z._1.featureId -> z._2))
     }}
   }
-
-  /**
-   * This function searches for a subgraph that matches the predicate argument analysis result of the input sentence.
-   *
-   * @param sourceNode
-   * @param targetNode
-   * @param caseName
-   * @return
-   */
-  /*
-  private def searchMatchRelation(sourceNode: KnowledgeBaseNode, targetNode: KnowledgeBaseNode, caseName: String, sentenceType: Int, transversalState:TransversalState): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
-
-    val nodeType: String = ToposoidUtils.getNodeType(sentenceType, ScopeType.LOCAL.index, FeatureType.PREDICATE_ARGUMENT.index)
-    val sourceSurface = sourceNode.predicateArgumentStructure.surface
-    val targetSurface = targetNode.predicateArgumentStructure.surface
-    //エッジの両側ノードで厳格に一致するものがあるかどうか
-    val queryBoth = "MATCH (n1:%s)-[e]-(n2:%s) WHERE n1.normalizedName='%s' AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.normalizedName='%s' AND n2.isDenialWord='%s' RETURN n1, e, n2".format(nodeType, nodeType, sourceNode.predicateArgumentStructure.normalizedName, sourceNode.predicateArgumentStructure.isDenialWord, caseName, targetNode.predicateArgumentStructure.normalizedName, targetNode.predicateArgumentStructure.isDenialWord)
-    logger.debug(queryBoth)
-    val queryBothResultJson: String = getCypherQueryResult(queryBoth, "", transversalState)
-    if (!queryBothResultJson.equals("""{"records":[]}""")) {
-      //ヒットするものがある場合
-      getKnowledgeBaseSideInfo(Json.parse(queryBothResultJson).as[Neo4jRecords], sourceNode, targetNode)
-    } else {
-      //ヒットするものがない場合
-      //上記でヒットしない場合、エッジの片側ノード（Source）で厳格に一致するものがあるかどうか
-      val querySourceOnly = "MATCH (n1:%s)-[e]-(n2:%s) WHERE n1.normalizedName='%s' AND n1.isDenialWord='%s' AND e.caseName='%s' RETURN n1, e, n2".format(nodeType, nodeType, sourceNode.predicateArgumentStructure.normalizedName, sourceNode.predicateArgumentStructure.isDenialWord, caseName)
-      logger.debug(querySourceOnly)
-      val querySourceOnlyResultJson: String = getCypherQueryResult(querySourceOnly, "", transversalState)
-      if (!querySourceOnlyResultJson.equals("""{"records":[]}""")) {
-        //TargetをImageに置き換えられる可能性あり
-        checkImageNode(sourceNode, targetNode, caseName, MATCHED_SOURCE_NODE_ONLY, sentenceType, List.empty[String], getSimilarImage(targetNode, sentenceType, transversalState) , transversalState)
-      } else {
-        //上記でヒットしない場合、エッジの片側ノード（Target）で厳格に一致するものがあるかどうか
-        val queryTargetOnly = "MATCH (n1:%s)-[e]-(n2:%s) WHERE e.caseName='%s' AND n2.normalizedName='%s' AND n2.isDenialWord='%s' RETURN n1, e, n2".format(nodeType, nodeType, caseName, targetNode.predicateArgumentStructure.normalizedName, targetNode.predicateArgumentStructure.isDenialWord)
-        logger.debug(queryTargetOnly)
-        val queryTargetOnlyResultJson: String = getCypherQueryResult(queryTargetOnly, "", transversalState)
-        if (!queryTargetOnlyResultJson.equals("""{"records":[]}""")) {
-          //SourceをImageに置き換えられる可能性あり
-          checkImageNode(sourceNode, targetNode, caseName, MATCHED_TARGET_NODE_ONLY, sentenceType, getSimilarImage(sourceNode, sentenceType, transversalState), List.empty[String], transversalState)
-        } else {
-          //もしTargetとSourceをImageに置き換えられれば、OK
-          checkImageNode(sourceNode, targetNode, caseName, NOT_MATCHED, sentenceType, getSimilarImage(sourceNode, sentenceType, transversalState), getSimilarImage(targetNode, sentenceType, transversalState), transversalState)
-        }
-      }
-    }
-    //return (axiomIds, searchResults)
-  }
-  */
-  /**
-   * This function gets the proposition ID contained in the result of querying Neo4J
-   *
-   * @param neo4jRecords
-   * @param sourceKey
-   * @param tragetKey
-   * @return
-   */
-  /*
-  private def getKnowledgeBaseSideInfo(neo4jRecords: Neo4jRecords, sourceProblemNode: KnowledgeBaseNode, targetProblemNode: KnowledgeBaseNode): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
-    neo4jRecords.records.foldLeft(List.empty[(KnowledgeBaseSideInfo, CoveredPropositionEdge)]) {
-      (acc, x) => {
-        val knowledgeBaseSideInfo = x.head.value.featureNode match {
-          case Some(y) => {
-            KnowledgeBaseSideInfo(y.propositionId, y.sentenceId, List(MatchedFeatureInfo(y.featureId, 1)))
-          }
-          case _ => {
-            KnowledgeBaseSideInfo(x.head.value.localNode.get.propositionId, x.head.value.localNode.get.sentenceId, List(MatchedFeatureInfo(x.head.value.localNode.get.sentenceId, 1)))
-          }
-        }
-        val sourceNode = CoveredPropositionNode(terminalId = sourceProblemNode.nodeId, terminalSurface = sourceProblemNode.predicateArgumentStructure.surface, terminalUrl = "")
-        val destinationNode = CoveredPropositionNode(terminalId = targetProblemNode.nodeId, terminalSurface = targetProblemNode.predicateArgumentStructure.surface, terminalUrl = "")
-        val coveredPropositionEdge = CoveredPropositionEdge(sourceNode = sourceNode, destinationNode = destinationNode)
-        acc :+ (knowledgeBaseSideInfo, coveredPropositionEdge)
-
-      }
-    }
-  }
-  */
-  /**
-   * Check if it is logically valid even if replaced with synonyms
-   *
-   * @param sourceNode
-   * @param targetNode
-   * @param caseName
-   * @param relationMatchState
-   * @return
-   */
-  /*
-  private def checkImageNode(sourceNode: KnowledgeBaseNode, targetNode: KnowledgeBaseNode, caseName: String, relationMatchState: RelationMatchState, sentenceType: Int, sourceFeatureIds:List[String], targetFeatureIds:List[String], transversalState:TransversalState): List[(KnowledgeBaseSideInfo, CoveredPropositionEdge)] = {
-
-    val nodeType: String = ToposoidUtils.getNodeType(sentenceType, ScopeType.LOCAL.index, FeatureType.PREDICATE_ARGUMENT.index)
-    val query = relationMatchState match {
-      case MATCHED_SOURCE_NODE_ONLY => {
-        "MATCH (n1:%s)-[e]-(n2:%s)<-[ie:ImageEdge]-(in2:ImageNode) WHERE n1.normalizedName='%s' AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND in2.featureId IN %s RETURN n1, ie, in2".format(nodeType, nodeType, sourceNode.predicateArgumentStructure.normalizedName, sourceNode.predicateArgumentStructure.isDenialWord, caseName, targetNode.predicateArgumentStructure.isDenialWord, "[%s]".format(targetFeatureIds.map("'%s'".format(_)).mkString(",")))
-      }
-      case MATCHED_TARGET_NODE_ONLY => {
-        "MATCH (in1:ImageNode)-[ie:ImageEdge]->(n1:%s)-[e]-(n2:%s) WHERE in1.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.normalizedName='%s' AND n2.isDenialWord='%s' RETURN in1, ie, n2".format(nodeType, nodeType, "[%s]".format(sourceFeatureIds.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, caseName, targetNode.predicateArgumentStructure.normalizedName, targetNode.predicateArgumentStructure.isDenialWord)
-      }
-      case NOT_MATCHED => {
-        "MATCH (in1:ImageNode)-[ie1:ImageEdge]->(n1:%s)-[e]-(n2:%s)<-[ie2:ImageEdge]-(in2:ImageNode) WHERE in1.featureId IN %s AND n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND in2.featureId IN %s RETURN in1, e, in2".format(nodeType, nodeType, "[%s]".format(sourceFeatureIds.map("'%s'".format(_)).mkString(",")), sourceNode.predicateArgumentStructure.isDenialWord, caseName, targetNode.predicateArgumentStructure.isDenialWord, "[%s]".format(targetFeatureIds.map("'%s'".format(_)).mkString(",")))
-      }
-    }
-
-    val resultJson: String = getCypherQueryResult(query, "", transversalState)
-    logger.debug(query)
-    if (resultJson.equals("""{"records":[]}""")) {
-      List.empty[(KnowledgeBaseSideInfo, CoveredPropositionEdge)]
-    } else {
-      getKnowledgeBaseSideInfo(Json.parse(resultJson).as[Neo4jRecords], sourceNode, targetNode)
-    }
-  }
-  */
 }
