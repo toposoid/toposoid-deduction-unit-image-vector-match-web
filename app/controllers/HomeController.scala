@@ -45,8 +45,9 @@ import com.ideal.linked.toposoid.common.RelationMatchState
 import com.ideal.linked.toposoid.protocol.model.base.MatchedKnowledgeNode
 import com.ideal.linked.toposoid.knowledgebase.model.KnowledgeFeatureReference
 import com.ideal.linked.common.DeploymentConverter.conf
+import com.ideal.linked.toposoid.common.DeductionQuery
 
-case class DeductionQuery(query:String,relationMatchState:RelationMatchState, sourceAlias:String, destinationAlias:String,isSourceConfirmed:Boolean, isDestinationConfirmed:Boolean, featureSimilarityMap:Map[String, Float] = Map.empty[String, Float])
+//case class DeductionQuery(query:String,relationMatchState:RelationMatchState, sourceAlias:String, destinationAlias:String,isSourceConfirmed:Boolean, isDestinationConfirmed:Boolean, featureSimilarityMap:Map[String, Float] = Map.empty[String, Float])
 
 class HomeController @Inject()(val controllerComponents: ControllerComponents) extends BaseController /*with DeductionUnitController*/ with LazyLogging {
   def execute():Action[JsValue] = Action(parse.json[JsValue])  { request =>
@@ -63,7 +64,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
             acc :+ VerifyingEdges(
               propositionId = aso.knowledgeBaseSemiGlobalNode.propositionId,
               sentenceId = aso.knowledgeBaseSemiGlobalNode.sentenceId,
-              coveredPropositionEdges = analyzeGraphKnowledge(getQeuries, DeductionUtils.getUnsettledEdges(aso), aso, transversalState)
+              coveredPropositionEdges = DeductionUtils.analyzeGraphKnowledge(getQeuries, aso, transversalState)
             )
           }
         }
@@ -132,7 +133,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
         )      
       }
   }
-
+  /*
   private def analyzeGraphKnowledge(getQeuries:(KnowledgeBaseEdge, Map[String, KnowledgeBaseNode], TransversalState) => List[DeductionQuery], edges: List[KnowledgeBaseEdge], aso:AnalyzedSentenceObject, transversalState:TransversalState):List[CoveredPropositionEdge] = {    
     val futures: List[Future[Option[CoveredPropositionEdge]]] = edges.foldLeft(List.empty[Future[Option[CoveredPropositionEdge]]]){
       (acc, edge) => {
@@ -243,7 +244,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       None
     }
   }
-  
+  */
   
   /*
   //Synonymで埋められてる場合も考慮
