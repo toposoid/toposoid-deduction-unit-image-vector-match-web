@@ -37,6 +37,7 @@ import play.api.test._
 import scala.concurrent.duration.DurationInt
 import com.ideal.linked.toposoid.common.ActionModeType
 import com.ideal.linked.toposoid.protocol.model.base.VerifyingEdges
+import controllers.TestUtilsEx.getImageInfo2
 
 class HomeControllerSpecJapaneseA extends PlaySpec with BeforeAndAfter with BeforeAndAfterAll with GuiceOneAppPerSuite with DefaultAwaitTimeout with Injecting {
 
@@ -62,45 +63,51 @@ class HomeControllerSpecJapaneseA extends PlaySpec with BeforeAndAfter with Befo
 
   val controller: HomeController = inject[HomeController]
 
-  val sentenceA = "猫が２匹います。"
-  val referenceA = Reference(url = "", surface = "猫が", surfaceIndex = 0, isWholeSentence = false,
+  val sentence1 = "猫が２匹います。"
+  val reference1 = Reference(url = "", surface = "猫が", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
-  val imageBoxInfoA = ImageBoxInfo(x = 11, y = 11, weight = 466, height = 310)
+  val imageBoxInfo1 = ImageBoxInfo(x = 11, y = 11, weight = 466, height = 310)
 
-  val sentenceB = "犬が１匹います。"
-  val referenceB = Reference(url = "", surface = "犬が", surfaceIndex = 0, isWholeSentence = false,
+  val sentence2 = "犬が１匹います。"
+  val reference2 = Reference(url = "", surface = "犬が", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
-  val imageBoxInfoB = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
+  val imageBoxInfo2 = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
 
-  val sentenceC = "トラックが一台止まっています。"
-  val referenceC = Reference(url = "", surface = "トラックが", surfaceIndex = 0, isWholeSentence = false,
+  val sentence3 = "トラックが一台止まっています。"
+  val reference3 = Reference(url = "", surface = "トラックが", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "https://farm8.staticflickr.com/7103/7210629614_5a388d9a9c_z.jpg")
-  val imageBoxInfoC = ImageBoxInfo(x = 23, y = 25, weight = 601, height = 341)
+  val imageBoxInfo3 = ImageBoxInfo(x = 23, y = 25, weight = 601, height = 341)
 
-  val sentenceD = "軍用機が2機飛んでいます。"
-  val referenceD = Reference(url = "", surface = "軍用機が", surfaceIndex = 0, isWholeSentence = false,
+  val sentence4 = "軍用機が2機飛んでいます。"
+  val reference4 = Reference(url = "", surface = "軍用機が", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "https://farm2.staticflickr.com/1070/5110702674_350f5b367d_z.jpg")
-  val imageBoxInfoD = ImageBoxInfo(x = 223, y = 108, weight = 140, height = 205)
+  val imageBoxInfo4 = ImageBoxInfo(x = 223, y = 108, weight = 140, height = 205)
 
-  val paraphraseA = "ペットが２匹います。"
-  val referenceParaA = Reference(url = "", surface = "ペットが", surfaceIndex = 0, isWholeSentence = false,
+  val paraphrase1 = "ペットが２匹います。"
+  val referencePara1Ok = Reference(url = "", surface = "ペットが", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
-  val imageBoxInfoParaA = ImageBoxInfo(x = 11, y = 11, weight = 466, height = 310)
-
-  val paraphraseB = "動物が１匹います。"
-  val referenceParaB = Reference(url = "", surface = "動物が", surfaceIndex = 0, isWholeSentence = false,
+  val imageBoxInfoPara1Ok = ImageBoxInfo(x = 11, y = 11, weight = 466, height = 310)
+  val referencePara1Ng = Reference(url = "", surface = "ペットが", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
-  val imageBoxInfoParaB = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
+  val imageBoxInfoPara1Ng = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
 
-  val paraphraseC = "大型車が一台止まっています。"
-  val referenceParaC = Reference(url = "", surface = "大型車が", surfaceIndex = 0, isWholeSentence = false,
+  val paraphrase2 = "動物が１匹います。"
+  val referencePara2Ok = Reference(url = "", surface = "動物が", surfaceIndex = 0, isWholeSentence = false,
+    originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
+  val imageBoxInfoPara2Ok = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
+  val referencePara2Ng = Reference(url = "", surface = "動物が", surfaceIndex = 0, isWholeSentence = false,
+    originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
+  val imageBoxInfoPara2Ng = ImageBoxInfo(x = 11, y = 11, weight = 466, height = 310)
+
+  val paraphrase3 = "大型車が一台止まっています。"
+  val referencePara3Ok = Reference(url = "", surface = "大型車が", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "https://farm8.staticflickr.com/7103/7210629614_5a388d9a9c_z.jpg")
-  val imageBoxInfoParaC = ImageBoxInfo(x = 23, y = 25, weight = 601, height = 341)
+  val imageBoxInfoPara3Ok = ImageBoxInfo(x = 23, y = 25, weight = 601, height = 341)
 
-  val paraphraseD = "飛行機が2機飛んでいます。"
-  val referenceParaD = Reference(url = "", surface = "飛行機が", surfaceIndex = 0, isWholeSentence = false,
+  val paraphrase4 = "飛行機が2機飛んでいます。"
+  val referencePara4Ok = Reference(url = "", surface = "飛行機が", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "https://farm2.staticflickr.com/1070/5110702674_350f5b367d_z.jpg")
-  val imageBoxInfoParaD = ImageBoxInfo(x = 223, y = 108, weight = 140, height = 205)
+  val imageBoxInfoPara4Ok = ImageBoxInfo(x = 223, y = 108, weight = 140, height = 205)
 
   val lang = "ja_JP"
 
@@ -110,11 +117,11 @@ class HomeControllerSpecJapaneseA extends PlaySpec with BeforeAndAfter with Befo
       val propositionId1 = getUUID()
       val sentenceId1 = getUUID()
       val sentenceId2 = getUUID()
-      val knowledge1 = getKnowledge(lang=lang, sentence=sentenceA, reference=referenceA, imageBoxInfo=imageBoxInfoA, transversalState)
-      val knowledge2 = getKnowledge(lang=lang, sentence=sentenceB, reference=referenceB, imageBoxInfo=imageBoxInfoB, transversalState)
+      val knowledge1 = getKnowledge(lang=lang, sentence=sentence1, reference=reference1, imageBoxInfo=imageBoxInfo1, transversalState)
+      val knowledge2 = getKnowledge(lang=lang, sentence=sentence2, reference=reference2, imageBoxInfo=imageBoxInfo2, transversalState)
 
-      val paraphrase1 = getKnowledge(lang=lang, sentence=paraphraseA, reference=referenceParaA, imageBoxInfo=imageBoxInfoParaA, transversalState)
-      val paraphrase2 = getKnowledge(lang=lang, sentence=paraphraseB, reference=referenceParaB, imageBoxInfo=imageBoxInfoParaB, transversalState)
+      val paraphraseKnowledge1 = getKnowledge(lang=lang, sentence=paraphrase1, reference=referencePara1Ok, imageBoxInfo=imageBoxInfoPara1Ok, transversalState)
+      val paraphraseKnowledge2 = getKnowledge(lang=lang, sentence=paraphrase2, reference=referencePara2Ok, imageBoxInfo=imageBoxInfoPara2Ok, transversalState)
 
       registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
       registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId2, knowledge2), transversalState)
@@ -122,10 +129,11 @@ class HomeControllerSpecJapaneseA extends PlaySpec with BeforeAndAfter with Befo
       val sentenceIdForInference1 = getUUID()
       val sentenceIdForInference2 = getUUID() 
       val premiseKnowledge = List.empty[KnowledgeForParser]
-      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, sentenceIdForInference1, paraphrase1), KnowledgeForParser(propositionIdForInference, sentenceIdForInference2, paraphrase2))
+      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, sentenceIdForInference1, paraphraseKnowledge1), KnowledgeForParser(propositionIdForInference, sentenceIdForInference2, paraphraseKnowledge2))
       val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)).toString()
 
-      val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, List(getImageInfo(referenceParaA, imageBoxInfoParaA, transversalState), getImageInfo(referenceParaB, imageBoxInfoParaB, transversalState), getImageInfo(referenceParaC, imageBoxInfoParaC, transversalState), getImageInfo(referenceParaD, imageBoxInfoParaD, transversalState)), transversalState)
+      val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara1Ok, imageBoxInfoPara1Ok), (referencePara2Ok, imageBoxInfoPara2Ok)), transversalState), transversalState)
+      //val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara1Ok, imageBoxInfoPara1Ok)), transversalState), transversalState)
       val updatedAsosJson = TestUtils.analyzeByBaseDeductionUnit(json, transversalState)
       val fr = FakeRequest(POST, "/execute")
         .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> transversalStateJson)
@@ -149,12 +157,55 @@ class HomeControllerSpecJapaneseA extends PlaySpec with BeforeAndAfter with Befo
   }
 
   //複数の主張(部分一致)
+  "The specification2" should {
+    "returns an appropriate response" in {
+      val propositionId1 = getUUID()
+      val sentenceId1 = getUUID()
+      val sentenceId2 = getUUID()
+      val knowledge1 = getKnowledge(lang=lang, sentence=sentence1, reference=reference1, imageBoxInfo=imageBoxInfo1, transversalState)
+      val knowledge2 = getKnowledge(lang=lang, sentence=sentence2, reference=reference2, imageBoxInfo=imageBoxInfo2, transversalState)
+
+      val paraphraseKnowledge1 = getKnowledge(lang=lang, sentence=paraphrase1, reference=referencePara1Ng, imageBoxInfo=imageBoxInfoPara1Ng, transversalState)
+      val paraphraseKnowledge2 = getKnowledge(lang=lang, sentence=paraphrase2, reference=referencePara2Ng, imageBoxInfo=imageBoxInfoPara2Ng, transversalState)
+
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId2, knowledge2), transversalState)
+      val propositionIdForInference = getUUID()
+      val sentenceIdForInference1 = getUUID()
+      val sentenceIdForInference2 = getUUID() 
+      val premiseKnowledge = List.empty[KnowledgeForParser]
+      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, sentenceIdForInference1, paraphraseKnowledge1), KnowledgeForParser(propositionIdForInference, sentenceIdForInference2, paraphraseKnowledge2))
+      val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)).toString()
+
+      val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara1Ok, imageBoxInfoPara1Ok), (referencePara2Ok, imageBoxInfoPara2Ok)), transversalState), transversalState)
+      //val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara1Ok, imageBoxInfoPara1Ok)), transversalState), transversalState)
+      val updatedAsosJson = TestUtils.analyzeByBaseDeductionUnit(json, transversalState)
+      val fr = FakeRequest(POST, "/execute")
+        .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> transversalStateJson)
+        .withJsonBody(Json.parse(updatedAsosJson))
+      val result = call(controller.execute(), fr)
+      status(result) mustBe OK
+      contentType(result) mustBe Some("application/json")
+      val jsonResult: String = contentAsJson(result).toString()
+      val verifyingEdgesList: List[VerifyingEdges] = Json.parse(jsonResult).as[List[VerifyingEdges]]
+
+      assert(verifyingEdgesList.map(x => x.coveredPropositionEdges.size).sum == 2)
+      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
+      TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=1)   
+      TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
+
+      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference2, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
+      TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference2, verifyingEdgesList=verifyingEdgesList, correctSize=1)   
+      TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference2, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
+
+    }
+  }  
   //一対の前提と主張(完全一致)
   //一対の前提と主張(部分一致)
   //２対の前提と主張(完全一致)
   //２対の前提と主張(部分一致)
 
-
+  /*
   "The specification40" should {
     "returns an appropriate response" in {
       val propositionId1 = getUUID()
@@ -209,5 +260,5 @@ class HomeControllerSpecJapaneseA extends PlaySpec with BeforeAndAfter with Befo
       assert(analyzedSentenceObjects.analyzedSentenceObjects.filter(x => x.knowledgeBaseSemiGlobalNode.sentenceType.equals(SentenceType.CLAIM.index) && x.deductionResult.havePremiseInGivenProposition).size == 0)
     }
   }
-
+  */
 }

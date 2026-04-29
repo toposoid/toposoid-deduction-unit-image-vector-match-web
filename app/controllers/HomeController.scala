@@ -60,7 +60,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       if (getAnalyzedSentenceObjectsWithImage(asos).size > 0) {
 
         val result:List[VerifyingEdges] = asos.foldLeft(List.empty[VerifyingEdges]){
-          (acc, aso) => {          
+          (acc, aso) => { 
             acc :+ VerifyingEdges(
               propositionId = aso.knowledgeBaseSemiGlobalNode.propositionId,
               sentenceId = aso.knowledgeBaseSemiGlobalNode.sentenceId,
@@ -83,6 +83,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
   }
 
   private def getQeuries(edge:KnowledgeBaseEdge, nodeMap:Map[String, KnowledgeBaseNode], transversalState:TransversalState):List[DeductionQuery] = {
+        
     val sourceKey = edge.sourceId
     val targetKey = edge.destinationId
     val sourceNode = nodeMap.get(sourceKey).get.asInstanceOf[KnowledgeBaseNode]
