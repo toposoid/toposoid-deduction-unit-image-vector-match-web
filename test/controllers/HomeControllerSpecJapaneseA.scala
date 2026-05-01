@@ -99,8 +99,8 @@ class HomeControllerSpecJapaneseA extends PlaySpec with BeforeAndAfter with Befo
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
   val imageBoxInfoPara2Ng = ImageBoxInfo(x = 11, y = 11, weight = 466, height = 310)
 
-  val paraphrase3 = "大型車が一台止まっています。"
-  val referencePara3Ok = Reference(url = "", surface = "大型車が", surfaceIndex = 0, isWholeSentence = false,
+  val paraphrase3 = "トレーラーが一台止まっています。"
+  val referencePara3Ok = Reference(url = "", surface = "トレーラーが", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "https://farm8.staticflickr.com/7103/7210629614_5a388d9a9c_z.jpg")
   val imageBoxInfoPara3Ok = ImageBoxInfo(x = 23, y = 25, weight = 601, height = 341)
   val referencePara3Ng = Reference(url = "", surface = "大型車が", surfaceIndex = 0, isWholeSentence = false,
@@ -360,7 +360,69 @@ class HomeControllerSpecJapaneseA extends PlaySpec with BeforeAndAfter with Befo
     }
   }  
   //２対の前提と主張(部分一致)
+  "The specification6" should {
+    "returns an appropriate response" in {
+      val propositionId1 = getUUID()
+      val sentenceId1 = getUUID()
+      val sentenceId2 = getUUID()
+      val sentenceId3 = getUUID()
+      val sentenceId4 = getUUID()
 
+      val knowledge1 = getKnowledge(lang=lang, sentence=sentence1, reference=reference1, imageBoxInfo=imageBoxInfo1, transversalState)
+      val knowledge2 = getKnowledge(lang=lang, sentence=sentence2, reference=reference2, imageBoxInfo=imageBoxInfo2, transversalState)
+      val knowledge3 = getKnowledge(lang=lang, sentence=sentence3, reference=reference3, imageBoxInfo=imageBoxInfo3, transversalState)
+      val knowledge4 = getKnowledge(lang=lang, sentence=sentence4, reference=reference4, imageBoxInfo=imageBoxInfo4, transversalState)
+
+      val paraphraseKnowledge1 = getKnowledge(lang=lang, sentence=paraphrase1, reference=referencePara1Ng, imageBoxInfo=imageBoxInfoPara1Ng, transversalState)
+      val paraphraseKnowledge2 = getKnowledge(lang=lang, sentence=paraphrase2, reference=referencePara2Ng, imageBoxInfo=imageBoxInfoPara2Ng, transversalState)
+      val paraphraseKnowledge3 = getKnowledge(lang=lang, sentence=paraphrase3, reference=referencePara3Ng, imageBoxInfo=imageBoxInfoPara3Ng, transversalState)
+      val paraphraseKnowledge4 = getKnowledge(lang=lang, sentence=paraphrase4, reference=referencePara4Ng, imageBoxInfo=imageBoxInfoPara4Ng, transversalState)
+
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId2, knowledge2), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId3, knowledge3), transversalState)
+      registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId4, knowledge4), transversalState)
+      
+      val propositionIdForInference = getUUID()
+      val sentenceIdForInference1 = getUUID()
+      val sentenceIdForInference2 = getUUID()
+      val sentenceIdForInference3 = getUUID()
+      val sentenceIdForInference4 = getUUID() 
+      val premiseKnowledge = List(KnowledgeForParser(propositionIdForInference, sentenceIdForInference1, paraphraseKnowledge1), KnowledgeForParser(propositionIdForInference, sentenceIdForInference2, paraphraseKnowledge2))
+      val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, sentenceIdForInference3, paraphraseKnowledge3), KnowledgeForParser(propositionIdForInference, sentenceIdForInference4, paraphraseKnowledge4))
+      val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)).toString()
+
+      val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara1Ng, imageBoxInfoPara1Ng), (referencePara2Ng, imageBoxInfoPara2Ng), (referencePara3Ng, imageBoxInfoPara3Ng), (referencePara4Ng, imageBoxInfoPara4Ng)), transversalState), transversalState)
+      //val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara1Ok, imageBoxInfoPara1Ok)), transversalState), transversalState)
+      val updatedAsosJson = TestUtils.analyzeByBaseDeductionUnit(json, transversalState)
+      val fr = FakeRequest(POST, "/execute")
+        .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> transversalStateJson)
+        .withJsonBody(Json.parse(updatedAsosJson))
+      val result = call(controller.execute(), fr)
+      status(result) mustBe OK
+      contentType(result) mustBe Some("application/json")
+      val jsonResult: String = contentAsJson(result).toString()
+      val verifyingEdgesList: List[VerifyingEdges] = Json.parse(jsonResult).as[List[VerifyingEdges]]
+
+      assert(verifyingEdgesList.map(x => x.coveredPropositionEdges.size).sum == 4)
+      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
+      TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=1)   
+      TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
+
+      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference2, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
+      TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference2, verifyingEdgesList=verifyingEdgesList, correctSize=1)   
+      TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference2, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
+
+      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference3, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
+      TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference3, verifyingEdgesList=verifyingEdgesList, correctSize=1)   
+      TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference3, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
+
+      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference4, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
+      TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference4, verifyingEdgesList=verifyingEdgesList, correctSize=1)   
+      TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference4, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
+
+    }
+  } 
   /*
   "The specification40" should {
     "returns an appropriate response" in {
