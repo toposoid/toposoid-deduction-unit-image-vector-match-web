@@ -63,7 +63,7 @@ class HomeControllerSpecJapaneseA extends PlaySpec with BeforeAndAfter with Befo
 
   val controller: HomeController = inject[HomeController]
 
-  val sentence1 = "猫が２匹います。"
+  val sentence1 = "猫が２匹寝てます。"
   val reference1 = Reference(url = "", surface = "猫が", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
   val imageBoxInfo1 = ImageBoxInfo(x = 11, y = 11, weight = 466, height = 310)
@@ -83,7 +83,7 @@ class HomeControllerSpecJapaneseA extends PlaySpec with BeforeAndAfter with Befo
     originalUrlOrReference = "https://farm2.staticflickr.com/1070/5110702674_350f5b367d_z.jpg")
   val imageBoxInfo4 = ImageBoxInfo(x = 223, y = 108, weight = 140, height = 205)
 
-  val paraphrase1 = "ペットが２匹います。"
+  val paraphrase1 = "ペットが２匹寝てます。"
   val referencePara1Ok = Reference(url = "", surface = "ペットが", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
   val imageBoxInfoPara1Ok = ImageBoxInfo(x = 11, y = 11, weight = 466, height = 310)
@@ -177,7 +177,7 @@ class HomeControllerSpecJapaneseA extends PlaySpec with BeforeAndAfter with Befo
       val claimKnowledge = List(KnowledgeForParser(propositionIdForInference, sentenceIdForInference1, paraphraseKnowledge1), KnowledgeForParser(propositionIdForInference, sentenceIdForInference2, paraphraseKnowledge2))
       val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)).toString()
 
-      val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara1Ok, imageBoxInfoPara1Ok), (referencePara2Ok, imageBoxInfoPara2Ok)), transversalState), transversalState)
+      val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara1Ng, imageBoxInfoPara1Ng), (referencePara2Ng, imageBoxInfoPara2Ng)), transversalState), transversalState)
       //val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara1Ok, imageBoxInfoPara1Ok)), transversalState), transversalState)
       val updatedAsosJson = TestUtils.analyzeByBaseDeductionUnit(json, transversalState)
       val fr = FakeRequest(POST, "/execute")
