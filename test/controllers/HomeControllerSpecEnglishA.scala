@@ -88,32 +88,32 @@ class HomeControllerSpecEnglishA extends PlaySpec with BeforeAndAfter with Befor
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
   val imageBoxInfoPara1Ok = ImageBoxInfo(x = 11, y = 11, weight = 466, height = 310)
   val referencePara1Ng = Reference(url = "", surface = "pets", surfaceIndex = 3, isWholeSentence = false,
-    originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
-  val imageBoxInfoPara1Ng = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
+    originalUrlOrReference = "https://farm8.staticflickr.com/7287/8737869589_16ab5a83c4_z.jpg")
+  val imageBoxInfoPara1Ng = ImageBoxInfo(x = 0, y = 0, weight = 630, height = 420)
 
   val paraphrase2 = "There is an animal"
   val referencePara2Ok = Reference(url = "", surface = "animal", surfaceIndex = 3, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
   val imageBoxInfoPara2Ok = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
   val referencePara2Ng = Reference(url = "", surface = "animal", surfaceIndex = 3, isWholeSentence = false,
-    originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
-  val imageBoxInfoPara2Ng = ImageBoxInfo(x = 11, y = 11, weight = 466, height = 310)
+    originalUrlOrReference = "https://farm8.staticflickr.com/7287/8737869589_16ab5a83c4_z.jpg")
+  val imageBoxInfoPara2Ng = ImageBoxInfo(x = 0, y = 0, weight = 630, height = 420)
 
   val paraphrase3 = "A large vehicle is parked."
   val referencePara3Ok = Reference(url = "", surface = "vehicle", surfaceIndex = 2, isWholeSentence = false,
     originalUrlOrReference = "https://farm8.staticflickr.com/7103/7210629614_5a388d9a9c_z.jpg")
   val imageBoxInfoPara3Ok = ImageBoxInfo(x = 23, y = 25, weight = 601, height = 341)
   val referencePara3Ng = Reference(url = "", surface = "vehicle", surfaceIndex = 2, isWholeSentence = false,
-    originalUrlOrReference = "https://farm2.staticflickr.com/1070/5110702674_350f5b367d_z.jpg")
-  val imageBoxInfoPara3Ng = ImageBoxInfo(x = 223, y = 108, weight = 140, height = 205)
+    originalUrlOrReference = "https://farm6.staticflickr.com/5195/7185346178_7e2664b081_z.jpg")
+  val imageBoxInfoPara3Ng = ImageBoxInfo(x = 0, y = 0, weight = 640, height = 480)
 
   val paraphrase4 = "Two planes are flying."
   val referencePara4Ok = Reference(url = "", surface = "planes", surfaceIndex = 1, isWholeSentence = false,
     originalUrlOrReference = "https://farm2.staticflickr.com/1070/5110702674_350f5b367d_z.jpg")
   val imageBoxInfoPara4Ok = ImageBoxInfo(x = 223, y = 108, weight = 140, height = 205)
   val referencePara4Ng = Reference(url = "", surface = "planes", surfaceIndex = 1, isWholeSentence = false,
-    originalUrlOrReference = "https://farm8.staticflickr.com/7103/7210629614_5a388d9a9c_z.jpg")
-  val imageBoxInfoPara4Ng = ImageBoxInfo(x = 23, y = 25, weight = 601, height = 341)
+    originalUrlOrReference = "https://farm6.staticflickr.com/5177/5478834869_87a4ac58ec_z.jpg")
+  val imageBoxInfoPara4Ng = ImageBoxInfo(x = 0, y = 0, weight = 640, height = 292)
 
 
   val lang = "en_US"
@@ -341,20 +341,20 @@ class HomeControllerSpecEnglishA extends PlaySpec with BeforeAndAfter with Befor
       val jsonResult: String = contentAsJson(result).toString()
       val verifyingEdgesList: List[VerifyingEdges] = Json.parse(jsonResult).as[List[VerifyingEdges]]
 
-      assert(verifyingEdgesList.map(x => x.coveredPropositionEdges.size).sum == 4)
-      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=1)   
+      assert(verifyingEdgesList.map(x => x.coveredPropositionEdges.size).sum == 9)
+      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=2)   
       TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
       TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
 
-      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference2, verifyingEdgesList=verifyingEdgesList, correctSize=1)   
+      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference2, verifyingEdgesList=verifyingEdgesList, correctSize=2)   
       TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference2, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
       TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference2, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
 
-      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference3, verifyingEdgesList=verifyingEdgesList, correctSize=1)   
+      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference3, verifyingEdgesList=verifyingEdgesList, correctSize=3)   
       TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference3, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
       TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference3, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
 
-      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference4, verifyingEdgesList=verifyingEdgesList, correctSize=1)   
+      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference4, verifyingEdgesList=verifyingEdgesList, correctSize=2)   
       TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference4, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
       TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference4, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
 
@@ -405,21 +405,21 @@ class HomeControllerSpecEnglishA extends PlaySpec with BeforeAndAfter with Befor
       val jsonResult: String = contentAsJson(result).toString()
       val verifyingEdgesList: List[VerifyingEdges] = Json.parse(jsonResult).as[List[VerifyingEdges]]
 
-      assert(verifyingEdgesList.map(x => x.coveredPropositionEdges.size).sum == 4)
+      assert(verifyingEdgesList.map(x => x.coveredPropositionEdges.size).sum == 9)
       TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
-      TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=1)   
+      TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=2)   
       TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
 
       TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference2, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
-      TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference2, verifyingEdgesList=verifyingEdgesList, correctSize=1)   
+      TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference2, verifyingEdgesList=verifyingEdgesList, correctSize=2)   
       TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference2, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
 
       TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference3, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
-      TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference3, verifyingEdgesList=verifyingEdgesList, correctSize=1)   
+      TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference3, verifyingEdgesList=verifyingEdgesList, correctSize=3)   
       TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference3, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
 
       TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference4, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
-      TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference4, verifyingEdgesList=verifyingEdgesList, correctSize=1)   
+      TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference4, verifyingEdgesList=verifyingEdgesList, correctSize=2)   
       TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference4, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
 
     }

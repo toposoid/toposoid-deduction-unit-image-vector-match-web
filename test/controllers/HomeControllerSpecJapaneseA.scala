@@ -88,32 +88,33 @@ class HomeControllerSpecJapaneseA extends PlaySpec with BeforeAndAfter with Befo
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
   val imageBoxInfoPara1Ok = ImageBoxInfo(x = 11, y = 11, weight = 466, height = 310)
   val referencePara1Ng = Reference(url = "", surface = "ペットが", surfaceIndex = 0, isWholeSentence = false,
-    originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
-  val imageBoxInfoPara1Ng = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
+    originalUrlOrReference = "https://farm8.staticflickr.com/7287/8737869589_16ab5a83c4_z.jpg")
+  val imageBoxInfoPara1Ng = ImageBoxInfo(x = 0, y = 0, weight = 630, height = 420)
 
   val paraphrase2 = "動物が１匹います。"
   val referencePara2Ok = Reference(url = "", surface = "動物が", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
   val imageBoxInfoPara2Ok = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
   val referencePara2Ng = Reference(url = "", surface = "動物が", surfaceIndex = 0, isWholeSentence = false,
-    originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
-  val imageBoxInfoPara2Ng = ImageBoxInfo(x = 11, y = 11, weight = 466, height = 310)
+    originalUrlOrReference = "https://farm8.staticflickr.com/7287/8737869589_16ab5a83c4_z.jpg")
+  val imageBoxInfoPara2Ng = ImageBoxInfo(x = 0, y = 0, weight = 630, height = 420)
+
 
   val paraphrase3 = "トレーラーが一台止まっています。"
   val referencePara3Ok = Reference(url = "", surface = "トレーラーが", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "https://farm8.staticflickr.com/7103/7210629614_5a388d9a9c_z.jpg")
   val imageBoxInfoPara3Ok = ImageBoxInfo(x = 23, y = 25, weight = 601, height = 341)
-  val referencePara3Ng = Reference(url = "", surface = "大型車が", surfaceIndex = 0, isWholeSentence = false,
-    originalUrlOrReference = "https://farm2.staticflickr.com/1070/5110702674_350f5b367d_z.jpg")
-  val imageBoxInfoPara3Ng = ImageBoxInfo(x = 223, y = 108, weight = 140, height = 205)
+  val referencePara3Ng = Reference(url = "", surface = "トレーラーが", surfaceIndex = 0, isWholeSentence = false,
+    originalUrlOrReference = "https://farm6.staticflickr.com/5195/7185346178_7e2664b081_z.jpg")
+  val imageBoxInfoPara3Ng = ImageBoxInfo(x = 0, y = 0, weight = 640, height = 480)
 
   val paraphrase4 = "飛行機が2機飛んでいます。"
   val referencePara4Ok = Reference(url = "", surface = "飛行機が", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "https://farm2.staticflickr.com/1070/5110702674_350f5b367d_z.jpg")
   val imageBoxInfoPara4Ok = ImageBoxInfo(x = 223, y = 108, weight = 140, height = 205)
   val referencePara4Ng = Reference(url = "", surface = "飛行機が", surfaceIndex = 0, isWholeSentence = false,
-    originalUrlOrReference = "https://farm8.staticflickr.com/7103/7210629614_5a388d9a9c_z.jpg")
-  val imageBoxInfoPara4Ng = ImageBoxInfo(x = 23, y = 25, weight = 601, height = 341)
+    originalUrlOrReference = "https://farm6.staticflickr.com/5177/5478834869_87a4ac58ec_z.jpg")
+  val imageBoxInfoPara4Ng = ImageBoxInfo(x = 0, y = 0, weight = 640, height = 292)
 
   val lang = "ja_JP"
 
