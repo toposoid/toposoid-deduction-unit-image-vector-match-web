@@ -163,16 +163,19 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
       } 
     }
 
+    val sourcePas = sourceNode.predicateArgumentStructure
+    val destinationPas = destinationNode.predicateArgumentStructure
+
     //SourceSideがすでにOKの場合  
-    val query1 = "MATCH (n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE %s e.caseName='%s' AND n2.isDenialWord='%s' %s RETURN n1, e, n2ext".format(nodeType, nodeType, destinationFeatureFilterQuery, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, sourceConfirmedQuery)
+    val query1 = "MATCH (n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE %s e.caseName='%s' AND n2.isDenialWord='%s' AND n2.modalityType='%s' %s RETURN n1, e, n2ext".format(nodeType, nodeType, destinationFeatureFilterQuery, edge.caseStr, destinationPas.isDenialWord, destinationPas.modalityType, sourceConfirmedQuery)
     //DestinationSideがすでにOKの場合
-    val query2 = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s) WHERE %s n1.isDenialWord='%s' AND e.caseName='%s' %s RETURN n1ext, e, n2".format(nodeType, nodeType, sourceFeatureFilterQuery, sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationConfirmedQuery)
+    val query2 = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s) WHERE %s n1.isDenialWord='%s' AND n1.modalityType='%s' AND e.caseName='%s' %s RETURN n1ext, e, n2".format(nodeType, nodeType, sourceFeatureFilterQuery, sourcePas.isDenialWord, sourcePas.modalityType, edge.caseStr, destinationConfirmedQuery)
     //両サイドともOKでない場合かつ、両サイド結果としてOKになる場合
-    val query3 = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]->(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE %s n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' %s RETURN n1ext, e, n2ext".format(nodeType, nodeType, totalFeatureQuery, sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, sentenceIdFilterQuery)
+    val query3 = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE %s n1.isDenialWord='%s' AND n1.modalityType='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2.modalityType='%s' %s RETURN n1ext, e, n2ext".format(nodeType, nodeType, totalFeatureQuery, sourcePas.isDenialWord, sourcePas.modalityType, edge.caseStr, destinationPas.isDenialWord, destinationPas.modalityType, sentenceIdFilterQuery)
     //両サイドともOKでない場合かつ、Sourceのみ結果としてOKになる場合
-    val query4 = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE %s n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' %s RETURN n1ext, e, n2".format(nodeType, nodeType, sourceFeatureFilterQuery, sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, sentenceIdFilterQuery)
+    val query4 = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE %s n1.isDenialWord='%s' AND n1.modalityType='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2.modalityType='%s' %s RETURN n1ext, e, n2".format(nodeType, nodeType, sourceFeatureFilterQuery, sourcePas.isDenialWord, sourcePas.modalityType, edge.caseStr, destinationPas.isDenialWord, destinationPas.modalityType, sentenceIdFilterQuery)
     //両サイドともOKでない場合かつ、Destinationのみ結果としてOKになる場合
-    val query5 = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE %s n1.isDenialWord='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' %s RETURN n1, e, n2ext".format(nodeType, nodeType, destinationFeatureFilterQuery, sourceNode.predicateArgumentStructure.isDenialWord, edge.caseStr, destinationNode.predicateArgumentStructure.isDenialWord, sentenceIdFilterQuery)
+    val query5 = "MATCH (n1ext:ImageNode)-[e1ext:ImageEdge]-(n1:%s)-[e]->(n2:%s)-[e2ext:ImageEdge]-(n2ext:ImageNode) WHERE %s n1.isDenialWord='%s' AND n1.modalityType='%s' AND e.caseName='%s' AND n2.isDenialWord='%s' AND n2.modalityType='%s' %s RETURN n1, e, n2ext".format(nodeType, nodeType, destinationFeatureFilterQuery, sourcePas.isDenialWord, sourcePas.modalityType, edge.caseStr, destinationPas.isDenialWord, destinationPas.modalityType, sentenceIdFilterQuery)
 
     val existFeatureOnSource = sourceNode.localContext.knowledgeFeatureReferences.filter(x => FeatureType.IMAGE.index == x.featureType).size > 0 && sourceFeatureSimilarityMap.size > 0
     val existFeatureOnDestination = destinationNode.localContext.knowledgeFeatureReferences.filter(x => FeatureType.IMAGE.index == x.featureType).size > 0 && destinationFeatureSimilarityMap.size > 0
