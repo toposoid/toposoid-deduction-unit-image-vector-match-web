@@ -91,13 +91,13 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
   val referencePara2bOk = Reference(url = "", surface = "動物が", surfaceIndex = 1, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
   val imageBoxInfoPara2bOk = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
-  val referencePara2aNg = Reference(url = "", surface = "ペットと", surfaceIndex = 1, isWholeSentence = false,
-    originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
-  val imageBoxInfoPara2aNg = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
+  
+  val referencePara2aNg = Reference(url = "", surface = "ペットと", surfaceIndex = 0, isWholeSentence = false,
+    originalUrlOrReference = "https://farm8.staticflickr.com/7287/8737869589_16ab5a83c4_z.jpg")
+  val imageBoxInfoPara2aNg = ImageBoxInfo(x = 0, y = 0, weight = 630, height = 420)
   val referencePara2bNg = Reference(url = "", surface = "動物が", surfaceIndex = 1, isWholeSentence = false,
-    originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
-  val imageBoxInfoPara2bNg = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
-
+    originalUrlOrReference = "https://farm8.staticflickr.com/7287/8737869589_16ab5a83c4_z.jpg")
+  val imageBoxInfoPara2bNg = ImageBoxInfo(x =0 , y = 0, weight = 630, height = 420)
 
   val sentence3 = "猫は犬ではない。"
   val reference3a = Reference(url = "", surface = "猫は", surfaceIndex = 0, isWholeSentence = false,
