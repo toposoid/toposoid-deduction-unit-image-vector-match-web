@@ -183,24 +183,34 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     //命題のFeatureNodeのペアをどう持つかで、仮に表層テキスト単位でマッチしても判断を先送りする必要がある。RelationMatchStateを指定している意味。
     (existFeatureOnSource, existFeatureOnDestination) match
       case (false, false) => {
-        List.empty[DeductionQuery]
+        logger.info(ToposoidUtils.formatMessageForLogger("query is nothing.", transversalState.userId))  
+        List.empty[DeductionQuery]        
       }
       case (true, true) => {
+        logger.info(ToposoidUtils.formatMessageForLogger(s"query1:$query1", transversalState.userId))  
+        logger.info(ToposoidUtils.formatMessageForLogger(s"query2:$query2", transversalState.userId))  
+        logger.info(ToposoidUtils.formatMessageForLogger(s"query3:$query3", transversalState.userId))  
+        logger.info(ToposoidUtils.formatMessageForLogger(s"query4:$query4", transversalState.userId))  
+        logger.info(ToposoidUtils.formatMessageForLogger(s"query5:$query5", transversalState.userId))  
         List(
           DeductionQuery(query1, RelationMatchState.MATCHED_BOTH, "n1", "n2ext", true, false, totalFeatureSimilarityMap),
           DeductionQuery(query2, RelationMatchState.MATCHED_BOTH, "n1ext", "n2", false, true, totalFeatureSimilarityMap),
           DeductionQuery(query3, RelationMatchState.MATCHED_BOTH, "n1ext", "n2ext", false, false, totalFeatureSimilarityMap),
           DeductionQuery(query4, RelationMatchState.MATCHED_SOURCE_NODE_ONLY, "n1ext", "n2", false, false, totalFeatureSimilarityMap),
           DeductionQuery(query5, RelationMatchState.MATCHED_TARGET_NODE_ONLY, "n1", "n2ext", false, false, totalFeatureSimilarityMap),
-        )      
+        )    
       }
       case (true, false) => {
+        logger.info(ToposoidUtils.formatMessageForLogger(s"query2:$query2", transversalState.userId))  
+        logger.info(ToposoidUtils.formatMessageForLogger(s"query4:$query4", transversalState.userId))  
         List(
           DeductionQuery(query2, RelationMatchState.MATCHED_BOTH, "n1ext", "n2", false, true, totalFeatureSimilarityMap),
           DeductionQuery(query4, RelationMatchState.MATCHED_SOURCE_NODE_ONLY, "n1ext", "n2", false, false, totalFeatureSimilarityMap),
         )      
       }
       case (false, true) => {
+        logger.info(ToposoidUtils.formatMessageForLogger(s"query1:$query1", transversalState.userId))  
+        logger.info(ToposoidUtils.formatMessageForLogger(s"query5:$query5", transversalState.userId))  
         List(
           DeductionQuery(query1, RelationMatchState.MATCHED_BOTH, "n1", "n2ext", true, false, totalFeatureSimilarityMap),
           DeductionQuery(query5, RelationMatchState.MATCHED_TARGET_NODE_ONLY, "n1", "n2ext", false, false, totalFeatureSimilarityMap),
