@@ -1,17 +1,14 @@
 name: Test And Build
 on:
-  push:
-    branches:
-      - feature
-  workflow_dispatch:
+  workflow_call:
 env:
   PJ_ACTOR: toposoid
   PJ_REPO: toposoid-deduction-unit-image-vector-match-web
   PJ_BRANCH: feature
   PJ_VERSION: 0.7-SNAPSHOT
 jobs:
-  unit-test_toposoid-deduction-unit-image-vector-match-web:
-    runs-on: self-hosted
+  unit-test_toposoid-deduction-unit-image-vector-match-web-amd64:
+    runs-on: [self-hosted, linux, X64]
     steps:
       - name: Clone ${{ env.PJ_REPO }}
         uses: actions/checkout@v3
@@ -115,6 +112,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: toposoid/${{ env.PJ_REPO }}:${{ env.PJ_VERSION }}
+          provenance: false
+          tags: toposoid/${{ env.PJ_REPO }}:${{ env.PJ_VERSION }}-amd64
           build-args: |
             TARGET_BRANCH=${{ env.PJ_BRANCH }}
