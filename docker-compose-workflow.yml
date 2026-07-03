@@ -25,9 +25,31 @@ services:
       - TOPOSOID_COMMON_IMAGE_RECOGNITION_PORT=9013
       - TOPOSOID_CONTENTS_ADMIN_HOST=toposoid-contents-admin-web
       - TOPOSOID_CONTENTS_ADMIN_PORT=9012
+      - TOPOSOID_JVM_XMS=512m
+      - TOPOSOID_JVM_XMX=4g
+      - TOPOSOID_JVM_XSS=512k
       - PLAY_HTTP_PORT=9104
     ports:
       - 9104:9104
+  
+  toposoid-deduction-unit-exact-match-web:
+    image: toposoid/toposoid-deduction-unit-exact-match-web:0.7-SNAPSHOT
+    environment:
+      - PRIVATE_IP_ADDRESS=toposoid-deduction-unit-exact-match-web
+      - TOPOSOID_GRAPHDB_WEB_HOST=data-accessor-neo4j-web
+      - TOPOSOID_GRAPHDB_WEB_PORT=9005
+      - TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST=toposoid-sentence-parser-japanese-web
+      - TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT=9001
+      - TOPOSOID_SENTENCE_PARSER_EN_WEB_HOST=toposoid-sentence-parser-english-web
+      - TOPOSOID_SENTENCE_PARSER_EN_WEB_PORT=9007
+      - TOPOSOID_COMMON_NLP_JP_WEB_HOST=toposoid-common-nlp-japanese-web
+      - TOPOSOID_COMMON_NLP_JP_WEB_PORT=9006
+      - TOPOSOID_COMMON_NLP_EN_WEB_HOST=toposoid-common-nlp-english-web
+      - TOPOSOID_COMMON_NLP_EN_WEB_PORT=9008
+      - PLAY_HTTP_PORT=9101
+    ports:
+      - 9101:9101
+
   data-accessor-neo4j-web:
     image: toposoid/data-accessor-neo4j-web:0.7-SNAPSHOT
     environment:
@@ -79,7 +101,7 @@ services:
     ports:
       - 9008:9008
   corenlp:
-    image: toposoid/corenlp:3.4.2
+    image: toposoid/corenlp:3.4.2    
     ports:
       - 9000:9000
     environment:
@@ -199,3 +221,4 @@ services:
       HUGGINGFACE_APIKEY: ''
       ENABLE_MODULES: 'text2vec-cohere,text2vec-huggingface,text2vec-palm,text2vec-openai,generative-openai,generative-cohere,generative-palm,ref2vec-centroid,reranker-cohere,qna-openai'
       CLUSTER_HOSTNAME: 'node1'
+
