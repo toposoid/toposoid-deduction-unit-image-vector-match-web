@@ -31,6 +31,11 @@ services:
       - PLAY_HTTP_PORT=9104
     ports:
       - 9104:9104
+    depends_on:
+      - data-accessor-neo4j-web
+      - toposoid-common-image-recognition-web
+      - data-accessor-image-weaviate-web
+
   
   toposoid-deduction-unit-exact-match-web:
     image: toposoid/toposoid-deduction-unit-exact-match-web:0.7-SNAPSHOT
@@ -49,6 +54,8 @@ services:
       - PLAY_HTTP_PORT=9101
     ports:
       - 9101:9101
+    depends_on:
+      - data-accessor-neo4j-web
 
   data-accessor-neo4j-web:
     image: toposoid/data-accessor-neo4j-web:0.7-SNAPSHOT
@@ -58,6 +65,27 @@ services:
       - PLAY_HTTP_PORT=9005
     ports:
       - 9005:9005
+    depends_on:
+      - neo4j
+      
+  neo4j:
+    image: neo4j:4.4.23
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,algo.*
+      - NEO4J_dbms_memory_heap_initial__size=512m
+      - NEO4J_dbms_memory_heap_max__size=4G
+      - NEO4J_dbms_transaction_timeout=10s
+      - NEO4J_apoc_uuid_enabled=true
+      - NEO4J_dbms_default__listen__address=0.0.0.0
+      - NEO4J_dbms_allow__upgrade=true
+      - NEO4J_dbms_default__database=neo4j
+      - NEO4J_AUTH=neo4j/p@ssw0rd
+
   toposoid-sentence-parser-japanese-web:
     image: toposoid/toposoid-sentence-parser-japanese-web:0.7-SNAPSHOT
     environment:
@@ -65,6 +93,7 @@ services:
       - PLAY_HTTP_PORT=9001
     ports:
       - 9001:9001
+
   toposoid-common-nlp-japanese-web:
     image: toposoid/toposoid-common-nlp-japanese-web:0.7-SNAPSHOT-lowspec
     environment:
@@ -78,6 +107,7 @@ services:
       - PLAY_HTTP_PORT=9006
     ports:
       - 9006:9006
+
   toposoid-sentence-parser-english-web:
     image: toposoid/toposoid-sentence-parser-english-web:0.7-SNAPSHOT-lowspec
     environment:
@@ -87,6 +117,9 @@ services:
       - TOPOSOID_PARSER_SPACY_MODEL_EN=en_core_web_md
     ports:
       - 9007:9007
+    depends_on:
+      - corenlp
+
   toposoid-common-nlp-english-web:
     image: toposoid/toposoid-common-nlp-english-web:0.7-SNAPSHOT-lowspec
     environment:
@@ -108,23 +141,6 @@ services:
       - TOPOSOID_JVM_XMS=512m
       - TOPOSOID_JVM_XMX=2g
       - TOPOSOID_JVM_XSS=512k          
-  neo4j:
-    image: neo4j:4.4.23
-    ports:
-      - "7474:7474"
-      - "7687:7687"
-    environment:
-      - NEO4J_apoc_export_file_enabled=true
-      - NEO4J_apoc_import_file_enabled=true
-      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,algo.*
-      - NEO4J_dbms_memory_heap_initial__size=512m
-      - NEO4J_dbms_memory_heap_max__size=4G
-      - NEO4J_dbms_transaction_timeout=10s
-      - NEO4J_apoc_uuid_enabled=true
-      - NEO4J_dbms_default__listen__address=0.0.0.0
-      - NEO4J_dbms_allow__upgrade=true
-      - NEO4J_dbms_default__database=neo4j
-      - NEO4J_AUTH=neo4j/p@ssw0rd
 
   toposoid-contents-admin-web:
     image: toposoid/toposoid-contents-admin-web:0.7-SNAPSHOT
@@ -164,6 +180,7 @@ services:
       - 9020:9011
     depends_on:
       - sentence-weaviate
+
   sentence-weaviate:
     command:
       - --host
