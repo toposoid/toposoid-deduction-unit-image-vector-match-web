@@ -97,9 +97,9 @@ services:
       CLUSTER_HOSTNAME: 'node1'
   
   #------------------------------------------------------------------------------------------------
-  #For Standalone Use 
+  #For Minimal use on Standalone
   #------------------------------------------------------------------------------------------------
-
+  
   toposoid-knowledge-register-web:
     image: toposoid/toposoid-knowledge-register-web:0.7-SNAPSHOT
     environment:
@@ -124,6 +124,9 @@ services:
       - PLAY_HTTP_PORT=9002
     ports:
       - 9002:9002
+    depends on:
+      - toposoid-knowledge-register-subscriber
+      - toposoid-language-detector-web
 
   toposoid-knowledge-register-subscriber:
     image: toposoid/toposoid-knowledge-register-subscriber:0.7-SNAPSHOT
@@ -156,6 +159,14 @@ services:
       - TOPOSOID_MQ_KNOWLEDGE_REGISTER_QUENE=toposoid-knowledge-register-queue.fifo
       - TOPOSOID_MQ_ACCESS_KEY=__##YOUR_AWS_ACCESS_KEY##__
       - TOPOSOID_MQ_SECRET_KEY=__##YOUR_AWS_SECRET_KEY##__
+    depends on:
+      - elasticmq
+      - data-accessor-mysql-web      
+      - data-accessor-neo4j-web
+      - toposoid-sentence-parser-japanese-web
+      - toposoid-common-nlp-japanese-web
+      - toposoid-sentence-parser-english-web
+      - toposoid-common-nlp-english-web  
 
   elasticmq:
     image: toposoid/toposoid-elasticmq:0.7-SNAPSHOT
@@ -196,6 +207,7 @@ services:
       - PLAY_HTTP_PORT=9001
     ports:
       - 9001:9001
+
   toposoid-common-nlp-japanese-web:
     image: toposoid/toposoid-common-nlp-japanese-web:0.7-SNAPSHOT-lowspec
     environment:
@@ -209,6 +221,7 @@ services:
       - PLAY_HTTP_PORT=9006
     ports:
       - 9006:9006
+
   toposoid-sentence-parser-english-web:
     image: toposoid/toposoid-sentence-parser-english-web:0.7-SNAPSHOT-lowspec
     environment:
@@ -218,6 +231,9 @@ services:
       - TOPOSOID_PARSER_SPACY_MODEL_EN=en_core_web_md
     ports:
       - 9007:9007
+    depends_on:
+      - corenlp
+
   toposoid-common-nlp-english-web:
     image: toposoid/toposoid-common-nlp-english-web:0.7-SNAPSHOT-lowspec
     environment:
@@ -231,6 +247,7 @@ services:
       - PLAY_HTTP_PORT=9008
     ports:
       - 9008:9008
+
   corenlp:
     image: toposoid/corenlp:3.4.2
     ports:
@@ -258,6 +275,7 @@ services:
       - 9020:9011
     depends_on:
       - sentence-weaviate
+
   sentence-weaviate:
     command:
       - --host
