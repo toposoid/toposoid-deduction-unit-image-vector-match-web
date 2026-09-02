@@ -39,8 +39,8 @@ import com.ideal.linked.toposoid.common.ActionModeType
 import com.ideal.linked.toposoid.protocol.model.base.VerifyingEdges
 import com.ideal.linked.toposoid.knowledgebase.regist.model.ImageReference
 import com.ideal.linked.toposoid.knowledgebase.regist.model.KnowledgeForImage
-import com.ideal.linked.toposoid.test.utils.TestUtils.uploadImage
-import controllers.TestUtilsEx.getAnalyzedSentenceObjectsJson
+import com.ideal.linked.toposoid.test.utils.TestUtils.{uploadImage, getAnalyzedSentenceObjectsJson}
+
 
 class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with BeforeAndAfterAll with GuiceOneAppPerSuite with DefaultAwaitTimeout with Injecting {
 
@@ -140,13 +140,13 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
   val referencePara3aOk = Reference(url = "", surface = "ペットは", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
   val imageReferencePara3aOk = ImageReference(referencePara3aOk, x = 11, y = 11, width = 466, height = 310)
-  val knowledgeForImagePara3Ok = KnowledgeForImage(getUUID(), imageReferencePara3aOk)    
+  val knowledgeForImagePara3aOk = KnowledgeForImage(getUUID(), imageReferencePara3aOk)    
   //val imageBoxInfoPara3aOk = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
 
   val referencePara3bOk = Reference(url = "", surface = "友達でない。", surfaceIndex = 1, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
-  val imageReference3bOk = ImageReference(referencePara3bOk, x = 77, y = 98, width = 433, height = 222)
-  val knowledgeForImage3bOk = KnowledgeForImage(getUUID(), imageReference3bOk)    
+  val imageReferencePara3bOk = ImageReference(referencePara3bOk, x = 77, y = 98, width = 433, height = 222)
+  val knowledgeForImagePara3bOk = KnowledgeForImage(getUUID(), imageReferencePara3bOk)    
   //val imageBoxInfoPara3bOk = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
 
   val paraphrase4 = "ペットは友達である。"
@@ -197,23 +197,23 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
     }
   }
-  /*
+  
   //片側対象、片側不一致
   "The specification2" should {
     "returns an appropriate response" in {
       val propositionId1 = getUUID()
       val sentenceId1 = getUUID()
       //val knowledge1 = Knowledge(sentenceA,"ja_JP", "{}", false, List(imageA))
-      val knowledge1 = getKnowledge2(lang=lang, sentence=sentence1, List((reference1, imageBoxInfo1)), transversalState)
-      val paraphraseKnowledge1 = getKnowledge2(lang=lang, sentence=paraphrase1, List((referencePara1Ng, imageBoxInfoPara1Ng)), transversalState)
+      val knowledge1 = Knowledge(lang=lang, sentence=sentence1, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImage1, transversalState)))
+      val paraphraseKnowledge1 = Knowledge(lang=lang, sentence=paraphrase1, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImagePara1Ng, transversalState)))
       registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
       val propositionIdForInference1 = getUUID()
       val sentenceIdForInference1 = getUUID()
       val premiseKnowledge = List.empty[KnowledgeForParser]
       val claimKnowledge = List(KnowledgeForParser(propositionIdForInference1, sentenceIdForInference1, paraphraseKnowledge1))
-      val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)).toString()
+      val inputSentenceForParser = InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)
       //val json = ToposoidUtils.callComponent(inputSentence, conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT"), "analyze")
-      val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara1Ng, imageBoxInfoPara1Ng)), transversalState), transversalState)
+      val json = getAnalyzedSentenceObjectsJson(lang, inputSentenceForParser, transversalState)
       val updatedAsosJson = TestUtils.analyzeByBaseDeductionUnit(json, transversalState)
       val fr = FakeRequest(POST, "/execute")
         .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> transversalStateJson)
@@ -230,24 +230,24 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
     }
   }
-
+  
   //両側対象、両側一致
   "The specification3" should {
     "returns an appropriate response" in {
       val propositionId1 = getUUID()
       val sentenceId1 = getUUID()
       //val knowledge1 = Knowledge(sentenceA,"ja_JP", "{}", false, List(imageA))
-      val knowledge1 = getKnowledge2(lang=lang, sentence=sentence2, List((reference2a, imageBoxInfo2a), (reference2b, imageBoxInfo2b)), transversalState)
-      val paraphraseKnowledge1 = getKnowledge2(lang=lang, sentence=paraphrase2, List((referencePara2aOk, imageBoxInfoPara2aOk), (referencePara2bOk, imageBoxInfoPara2bOk)), transversalState)
+      val knowledge1 = Knowledge(lang=lang, sentence=sentence2, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImage2a, transversalState), uploadImage(knowledgeForImage2b, transversalState)))
+      val paraphraseKnowledge1 = Knowledge(lang=lang, sentence=paraphrase2, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImagePara2aOk, transversalState), uploadImage(knowledgeForImagePara2bOk, transversalState)))
       registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
       
       val propositionIdForInference1 = getUUID()
       val sentenceIdForInference1 = getUUID()
       val premiseKnowledge = List.empty[KnowledgeForParser]
       val claimKnowledge = List(KnowledgeForParser(propositionIdForInference1, sentenceIdForInference1, paraphraseKnowledge1))
-      val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)).toString()
+      val inputSentenceForParser = InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)
       //val json = ToposoidUtils.callComponent(inputSentence, conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT"), "analyze")
-      val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara2aOk, imageBoxInfoPara2aOk), (referencePara2bOk, imageBoxInfoPara2bOk)), transversalState), transversalState)
+      val json = getAnalyzedSentenceObjectsJson(lang, inputSentenceForParser, transversalState)
       val updatedAsosJson = TestUtils.analyzeByBaseDeductionUnit(json, transversalState)
       val fr = FakeRequest(POST, "/execute")
         .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> transversalStateJson)
@@ -272,17 +272,17 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       val propositionId1 = getUUID()
       val sentenceId1 = getUUID()
       //val knowledge1 = Knowledge(sentenceA,"ja_JP", "{}", false, List(imageA))
-      val knowledge1 = getKnowledge2(lang=lang, sentence=sentence2, List((reference2a, imageBoxInfo2a), (reference2b, imageBoxInfo2b)), transversalState)
-      val paraphraseKnowledge1 = getKnowledge2(lang=lang, sentence=paraphrase2, List((referencePara2aNg, imageBoxInfoPara2aNg), (referencePara2bOk, imageBoxInfoPara2bOk)), transversalState)
+      val knowledge1 = Knowledge(lang=lang, sentence=sentence2, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImage2a, transversalState), uploadImage(knowledgeForImage2b, transversalState)))
+      val paraphraseKnowledge1 = Knowledge(lang=lang, sentence=paraphrase2, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImagePara2aNg, transversalState), uploadImage(knowledgeForImagePara2bOk, transversalState)))
       registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
       
       val propositionIdForInference1 = getUUID()
       val sentenceIdForInference1 = getUUID()
       val premiseKnowledge = List.empty[KnowledgeForParser]
       val claimKnowledge = List(KnowledgeForParser(propositionIdForInference1, sentenceIdForInference1, paraphraseKnowledge1))
-      val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)).toString()
+      val inputSentenceForParser = InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)
       //val json = ToposoidUtils.callComponent(inputSentence, conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT"), "analyze")
-      val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara2aNg, imageBoxInfoPara2aNg), (referencePara2bOk, imageBoxInfoPara2bOk)), transversalState), transversalState)
+      val json = getAnalyzedSentenceObjectsJson(lang, inputSentenceForParser, transversalState)
       val updatedAsosJson = TestUtils.analyzeByBaseDeductionUnit(json, transversalState)
       val fr = FakeRequest(POST, "/execute")
         .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> transversalStateJson)
@@ -300,24 +300,24 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       
     }
   }
-
+  
   //両側対象、片側のみ一致その2
   "The specification4b" should {
     "returns an appropriate response" in {
       val propositionId1 = getUUID()
       val sentenceId1 = getUUID()
       //val knowledge1 = Knowledge(sentenceA,"ja_JP", "{}", false, List(imageA))
-      val knowledge1 = getKnowledge2(lang=lang, sentence=sentence2, List((reference2a, imageBoxInfo2a), (reference2b, imageBoxInfo2b)), transversalState)
-      val paraphraseKnowledge1 = getKnowledge2(lang=lang, sentence=paraphrase2, List((referencePara2aOk, imageBoxInfoPara2aOk), (referencePara2bNg, imageBoxInfoPara2bNg)), transversalState)
+      val knowledge1 = Knowledge(lang=lang, sentence=sentence2, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImage2a, transversalState), uploadImage(knowledgeForImage2b, transversalState)))
+      val paraphraseKnowledge1 = Knowledge(lang=lang, sentence=paraphrase2, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImagePara2aOk, transversalState), uploadImage(knowledgeForImagePara2bNg, transversalState)))
       registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
       
       val propositionIdForInference1 = getUUID()
       val sentenceIdForInference1 = getUUID()
       val premiseKnowledge = List.empty[KnowledgeForParser]
       val claimKnowledge = List(KnowledgeForParser(propositionIdForInference1, sentenceIdForInference1, paraphraseKnowledge1))
-      val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)).toString()
+      val inputSentenceForParser = InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)
       //val json = ToposoidUtils.callComponent(inputSentence, conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT"), "analyze")
-      val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara2aOk, imageBoxInfoPara2aOk), (referencePara2bNg, imageBoxInfoPara2bNg)), transversalState), transversalState)
+      val json = getAnalyzedSentenceObjectsJson(lang, inputSentenceForParser, transversalState)
       val updatedAsosJson = TestUtils.analyzeByBaseDeductionUnit(json, transversalState)
       val fr = FakeRequest(POST, "/execute")
         .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> transversalStateJson)
@@ -335,24 +335,24 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       
     }
   }
-
+  
   //両側対象、否定一致
   "The specification5" should {
     "returns an appropriate response" in {
       val propositionId1 = getUUID()
       val sentenceId1 = getUUID()
       //val knowledge1 = Knowledge(sentenceA,"ja_JP", "{}", false, List(imageA))
-      val knowledge1 = getKnowledge2(lang=lang, sentence=sentence3, List((reference3a, imageBoxInfo3a), (reference3b, imageBoxInfo2b)), transversalState)
-      val paraphraseKnowledge1 = getKnowledge2(lang=lang, sentence=paraphrase3, List((referencePara3aOk, imageBoxInfoPara3aOk), (referencePara3bOk, imageBoxInfoPara3bOk)), transversalState)
+      val knowledge1 = Knowledge(lang=lang, sentence=sentence3, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImage3a, transversalState), uploadImage(knowledgeForImage3b, transversalState)))
+      val paraphraseKnowledge1 = Knowledge(lang=lang, sentence=paraphrase3, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImagePara3aOk, transversalState), uploadImage(knowledgeForImagePara3bOk, transversalState)))
       registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
       
       val propositionIdForInference1 = getUUID()
       val sentenceIdForInference1 = getUUID()
       val premiseKnowledge = List.empty[KnowledgeForParser]
       val claimKnowledge = List(KnowledgeForParser(propositionIdForInference1, sentenceIdForInference1, paraphraseKnowledge1))
-      val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)).toString()
+      val inputSentenceForParser = InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)
       //val json = ToposoidUtils.callComponent(inputSentence, conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT"), "analyze")
-      val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara3aOk, imageBoxInfoPara3aOk), (referencePara3bOk, imageBoxInfoPara3bOk)), transversalState), transversalState)
+      val json = getAnalyzedSentenceObjectsJson(lang, inputSentenceForParser, transversalState)
       val updatedAsosJson = TestUtils.analyzeByBaseDeductionUnit(json, transversalState)
       val fr = FakeRequest(POST, "/execute")
         .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> transversalStateJson)
@@ -370,24 +370,24 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       
     }
   }
-
+  
   //両側対象、否定不一致
   "The specification6" should {
     "returns an appropriate response" in {
       val propositionId1 = getUUID()
       val sentenceId1 = getUUID()
       //val knowledge1 = Knowledge(sentenceA,"ja_JP", "{}", false, List(imageA))
-      val knowledge1 = getKnowledge2(lang=lang, sentence=sentence3, List((reference3a, imageBoxInfo3a), (reference3b, imageBoxInfo2b)), transversalState)
-      val paraphraseKnowledge1 = getKnowledge2(lang=lang, sentence=paraphrase4, List((referencePara4aOk, imageBoxInfoPara4aOk), (referencePara4bOk, imageBoxInfoPara4bOk)), transversalState)
+      val knowledge1 = Knowledge(lang=lang, sentence=sentence3, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImage3a, transversalState), uploadImage(knowledgeForImage2b, transversalState)))
+      val paraphraseKnowledge1 = Knowledge(lang=lang, sentence=paraphrase4, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImagePara4aOk, transversalState), uploadImage(knowledgeForImagePara4bOk, transversalState)))
       registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
       
       val propositionIdForInference1 = getUUID()
       val sentenceIdForInference1 = getUUID()
       val premiseKnowledge = List.empty[KnowledgeForParser]
       val claimKnowledge = List(KnowledgeForParser(propositionIdForInference1, sentenceIdForInference1, paraphraseKnowledge1))
-      val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)).toString()
+      val inputSentenceForParser = InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)
       //val json = ToposoidUtils.callComponent(inputSentence, conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT"), "analyze")
-      val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara4aOk, imageBoxInfoPara4aOk), (referencePara4bOk, imageBoxInfoPara4bOk)), transversalState), transversalState)
+      val json = getAnalyzedSentenceObjectsJson(lang, inputSentenceForParser, transversalState)
       val updatedAsosJson = TestUtils.analyzeByBaseDeductionUnit(json, transversalState)
       val fr = FakeRequest(POST, "/execute")
         .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> transversalStateJson)
@@ -405,23 +405,24 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       
     }
   }  
+  
   //全て被覆できないケース
   "The specification7" should {
     "returns an appropriate response" in {
       val propositionId1 = getUUID()
       val sentenceId1 = getUUID()
       //val knowledge1 = Knowledge(sentenceA,"ja_JP", "{}", false, List(imageA))
-      val knowledge1 = getKnowledge2(lang=lang, sentence=sentence2, List((reference2a, imageBoxInfo2a), (reference2b, imageBoxInfo2b)), transversalState)
-      val paraphraseKnowledge1 = getKnowledge2(lang=lang, sentence=paraphrase2, List((referencePara2aNg, imageBoxInfoPara2aNg), (referencePara2bNg, imageBoxInfoPara2bNg)), transversalState)
+      val knowledge1 = Knowledge(lang=lang, sentence=sentence2, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImage2a, transversalState), uploadImage(knowledgeForImage2b, transversalState)))
+      val paraphraseKnowledge1 = Knowledge(lang=lang, sentence=paraphrase2, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImagePara2aNg, transversalState), uploadImage(knowledgeForImagePara2bNg, transversalState)))
       registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
       
       val propositionIdForInference1 = getUUID()
       val sentenceIdForInference1 = getUUID()
       val premiseKnowledge = List.empty[KnowledgeForParser]
       val claimKnowledge = List(KnowledgeForParser(propositionIdForInference1, sentenceIdForInference1, paraphraseKnowledge1))
-      val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)).toString()
+      val inputSentenceForParser = InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)
       //val json = ToposoidUtils.callComponent(inputSentence, conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT"), "analyze")
-      val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara2aNg, imageBoxInfoPara2aNg), (referencePara2bNg, imageBoxInfoPara2bNg)), transversalState), transversalState)
+      val json = getAnalyzedSentenceObjectsJson(lang, inputSentenceForParser, transversalState)
       val updatedAsosJson = TestUtils.analyzeByBaseDeductionUnit(json, transversalState)
       val fr = FakeRequest(POST, "/execute")
         .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> transversalStateJson)
@@ -439,7 +440,5 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       
     }
   }
-  */
-
 
 }
