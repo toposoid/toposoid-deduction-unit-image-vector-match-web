@@ -28,6 +28,8 @@ services:
       - TOPOSOID_JVM_XMS=512m
       - TOPOSOID_JVM_XMX=4g
       - TOPOSOID_JVM_XSS=512k
+      - TOPOSOID_FILE_UPLOAD_FACADE_HOST=toposoid-file-upload-facade-web
+      - TOPOSOID_FILE_UPLOAD_FACADE_PORT=9024
       - PLAY_HTTP_PORT=9104
     ports:
       - 9104:9104
@@ -239,3 +241,24 @@ services:
       ENABLE_MODULES: 'text2vec-cohere,text2vec-huggingface,text2vec-palm,text2vec-openai,generative-openai,generative-cohere,generative-palm,ref2vec-centroid,reranker-cohere,qna-openai'
       CLUSTER_HOSTNAME: 'node1'
 
+  toposoid-file-upload-facade-web:
+    image: toposoid/toposoid-file-upload-facade-web:0.7-SNAPSHOT
+    tty: true
+    environment:
+      - TOPOSOID_CONTENTS_URL=http://toposoid-contents-admin-web:9012/contents/
+      - TOPOSOID_CONTENTS_ADMIN_HOST=toposoid-contents-admin-web
+      - TOPOSOID_CONTENTS_ADMIN_PORT=9012      
+      - TOPOSOID_FILESCAN_HOST=clamav   
+      - TOPOSOID_FILESCAN_PORT=3310
+    ports:
+      - 9024:9024
+    depends_on:
+      - clamav
+    command: /bin/bash -c "python -m http.server 8000 -d /app/toposoid-file-upload-facade-web/testdata"
+
+
+  clamav:
+    image: clamav/clamav-debian
+    container_name: clamav
+    ports:
+      - "3310:3310"    
