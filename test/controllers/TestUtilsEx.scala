@@ -20,7 +20,7 @@ package controllers
 import com.ideal.linked.toposoid.common.{FeatureType, DataEntryType, Neo4JUtilsImpl, ToposoidUtils, TransversalState}
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{ImageReference, Knowledge, KnowledgeForImage, PropositionRelation, Reference}
 import com.ideal.linked.common.DeploymentConverter.conf
-import com.ideal.linked.toposoid.knowledgebase.featurevector.model.RegistContentResult
+//import com.ideal.linked.toposoid.knowledgebase.featurevector.model.RegistContentResult
 import com.ideal.linked.toposoid.knowledgebase.model.{KnowledgeBaseNode, KnowledgeFeatureReference, LocalContext}
 import com.ideal.linked.toposoid.protocol.model.base.{AnalyzedSentenceObject, AnalyzedSentenceObjects}
 import com.ideal.linked.toposoid.protocol.model.neo4j.Neo4jRecords
@@ -30,7 +30,7 @@ import com.typesafe.scalalogging.LazyLogging
 import play.api.libs.json.Json
 //import io.jvm.uuid.UUID
 
-case class ImageBoxInfo(x:Int, y:Int, weight:Int, height:Int)
+//case class ImageBoxInfo(x:Int, y:Int, weight:Int, height:Int)
 
 object TestUtilsEx extends LazyLogging {
 
@@ -67,6 +67,7 @@ object TestUtilsEx extends LazyLogging {
     uuid
   }
 
+  /*
   def getKnowledge(lang:String, sentence: String, reference: Reference, imageBoxInfo: ImageBoxInfo, transversalState: TransversalState): Knowledge = {
     Knowledge(sentence, lang, "{}", false, List(getImageInfo(reference, imageBoxInfo, transversalState)))
   }
@@ -96,7 +97,7 @@ object TestUtilsEx extends LazyLogging {
       registContentResult.knowledgeForImage
     })
   }
-
+  
   def addImageInfoToAnalyzedSentenceObjects(lang:String,inputSentence: String, knowledgeForImages: List[KnowledgeForImage], transversalState: TransversalState): String = {
 
     val json = lang match {
@@ -151,4 +152,5 @@ object TestUtilsEx extends LazyLogging {
     }
     Json.toJson(AnalyzedSentenceObjects(updatedAsos, asos.deductionConfiguration)).toString()
   }
+  */
 }

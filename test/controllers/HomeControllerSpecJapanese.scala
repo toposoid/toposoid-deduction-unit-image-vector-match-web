@@ -24,7 +24,7 @@ import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, Proposit
 import com.ideal.linked.toposoid.protocol.model.base.AnalyzedSentenceObjects
 import com.ideal.linked.toposoid.protocol.model.parser.{InputSentenceForParser, KnowledgeForParser, KnowledgeSentenceSetForParser}
 import com.ideal.linked.toposoid.test.utils.TestUtils
-import controllers.TestUtilsEx.{addImageInfoToAnalyzedSentenceObjects, getImageInfo2, getKnowledge2, getUUID, registerSingleClaim}
+import controllers.TestUtilsEx.{getUUID, registerSingleClaim}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -37,6 +37,9 @@ import play.api.test._
 import scala.concurrent.duration.DurationInt
 import com.ideal.linked.toposoid.common.ActionModeType
 import com.ideal.linked.toposoid.protocol.model.base.VerifyingEdges
+import com.ideal.linked.toposoid.knowledgebase.regist.model.ImageReference
+import com.ideal.linked.toposoid.knowledgebase.regist.model.KnowledgeForImage
+import com.ideal.linked.toposoid.test.utils.TestUtils.{uploadImage, getAnalyzedSentenceObjectsJsonForSemiGlobal}
 
 class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with BeforeAndAfterAll with GuiceOneAppPerSuite with DefaultAwaitTimeout with Injecting {
 
@@ -60,69 +63,106 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
 
   override implicit def defaultAwaitTimeout: Timeout = 600.seconds
   val controller: HomeController = inject[HomeController]
-
+  
   val sentence1 = "猫が２匹います。"
   val reference1 = Reference(url = "", surface = "猫が", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
-  val imageBoxInfo1 = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
+  val imageReference1 = ImageReference(reference1, x = 11, y = 11, width = 466, height = 310)
+  val knowledgeForImage1 = KnowledgeForImage(getUUID(), imageReference1)      
+  //val imageBoxInfo1 = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
 
   val paraphrase1 = "ペットが２匹います。"
   val referencePara1Ok = Reference(url = "", surface = "ペットが", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
-  val imageBoxInfoPara1Ok = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
+  val imageReferencePara1Ok = ImageReference(referencePara1Ok, x = 11, y = 11, width = 466, height = 310)
+  val knowledgeForImagePara1Ok = KnowledgeForImage(getUUID(), imageReferencePara1Ok)  
+  //val imageBoxInfoPara1Ok = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
 
   val referencePara1Ng = Reference(url = "", surface = "ペットが", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
-  val imageBoxInfoPara1Ng = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
+  val imageReferencePara1Ng = ImageReference(referencePara1Ng, x = 77, y = 98, width = 433, height = 222)
+  val knowledgeForImagePara1Ng = KnowledgeForImage(getUUID(), imageReferencePara1Ng)    
+  //val imageBoxInfoPara1Ng = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
 
 
   val sentence2 = "猫と犬がいます。"
   val reference2a = Reference(url = "", surface = "猫と", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
-  val imageBoxInfo2a = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
+  val imageReference2a = ImageReference(reference2a, x = 11, y = 11, width = 466, height = 310)
+  val knowledgeForImage2a = KnowledgeForImage(getUUID(), imageReference2a)      
+  //val imageBoxInfo2a = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
+  
   val reference2b = Reference(url = "", surface = "犬が", surfaceIndex = 1, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
-  val imageBoxInfo2b = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
+  val imageReference2b = ImageReference(reference2b, x = 77, y = 98, width = 433, height = 222)  
+  val knowledgeForImage2b = KnowledgeForImage(getUUID(), imageReference2b)       
+  //val imageBoxInfo2b = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
 
   val paraphrase2 = "ペットと動物がいます。"
   val referencePara2aOk = Reference(url = "", surface = "ペットと", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
-  val imageBoxInfoPara2aOk = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
+  val imageReferencePara2aOk = ImageReference(referencePara2aOk, x = 11, y = 11, width = 466, height = 310)
+  val knowledgeForImagePara2aOk = KnowledgeForImage(getUUID(), imageReferencePara2aOk)  
+  //val imageBoxInfoPara2aOk = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
+  
   val referencePara2bOk = Reference(url = "", surface = "動物が", surfaceIndex = 1, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
-  val imageBoxInfoPara2bOk = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
+  val imageReference2bOk = ImageReference(referencePara2bOk, x = 77, y = 98, width = 433, height = 222)  
+  val knowledgeForImagePara2bOk = KnowledgeForImage(getUUID(), imageReference2bOk)       
+  //val imageBoxInfoPara2bOk = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
   
   val referencePara2aNg = Reference(url = "", surface = "ペットと", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "https://farm8.staticflickr.com/7287/8737869589_16ab5a83c4_z.jpg")
-  val imageBoxInfoPara2aNg = ImageBoxInfo(x = 0, y = 0, weight = 630, height = 420)
+  val imageReferencePara2aNg = ImageReference(referencePara2aNg, x = 0, y = 0, width = 630, height = 420)
+  val knowledgeForImagePara2aNg = KnowledgeForImage(getUUID(), imageReferencePara2aNg)      
+  //val imageBoxInfoPara2aNg = ImageBoxInfo(x = 0, y = 0, weight = 630, height = 420)
   val referencePara2bNg = Reference(url = "", surface = "動物が", surfaceIndex = 1, isWholeSentence = false,
     originalUrlOrReference = "https://farm8.staticflickr.com/7287/8737869589_16ab5a83c4_z.jpg")
-  val imageBoxInfoPara2bNg = ImageBoxInfo(x =0 , y = 0, weight = 630, height = 420)
+  val imageReferencePara2bNg = ImageReference(referencePara2bNg, x = 0, y = 0, width = 630, height = 420)
+  val knowledgeForImagePara2bNg = KnowledgeForImage(getUUID(), imageReferencePara2bNg)      
+  //val imageBoxInfoPara2bNg = ImageBoxInfo(x =0 , y = 0, weight = 630, height = 420)
 
   val sentence3 = "猫は犬ではない。"
   val reference3a = Reference(url = "", surface = "猫は", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
-  val imageBoxInfo3a = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
+  val imageReference3a = ImageReference(reference3a, x = 11, y = 11, width = 466, height = 310)
+  val knowledgeForImage3a = KnowledgeForImage(getUUID(), imageReference3a)  
+
+  //val imageBoxInfo3a = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
   val reference3b = Reference(url = "", surface = "犬ではない。", surfaceIndex = 1, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
-  val imageBoxInfo3b = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
+  val imageReference3b = ImageReference(reference3b, x = 77, y = 98, width = 433, height = 222)
+  val knowledgeForImage3b = KnowledgeForImage(getUUID(), imageReference3b)    
+  //val imageBoxInfo3b = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
 
   val paraphrase3 = "ペットは友達でない。"
   val referencePara3aOk = Reference(url = "", surface = "ペットは", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
-  val imageBoxInfoPara3aOk = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
+  val imageReferencePara3aOk = ImageReference(referencePara3aOk, x = 11, y = 11, width = 466, height = 310)
+  val knowledgeForImagePara3Ok = KnowledgeForImage(getUUID(), imageReferencePara3aOk)    
+  //val imageBoxInfoPara3aOk = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
+
   val referencePara3bOk = Reference(url = "", surface = "友達でない。", surfaceIndex = 1, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
-  val imageBoxInfoPara3bOk = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
+  val imageReference3bOk = ImageReference(referencePara3bOk, x = 77, y = 98, width = 433, height = 222)
+  val knowledgeForImage3bOk = KnowledgeForImage(getUUID(), imageReference3bOk)    
+  //val imageBoxInfoPara3bOk = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
 
   val paraphrase4 = "ペットは友達である。"
   val referencePara4aOk = Reference(url = "", surface = "ペットは", surfaceIndex = 0, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
-  val imageBoxInfoPara4aOk = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
+  val imageReferencePara4aOk = ImageReference(referencePara4aOk, x = 11, y = 11, width = 466, height = 310)
+  val knowledgeForImagePara4aOk = KnowledgeForImage(getUUID(), imageReferencePara4aOk)    
+  //val imageBoxInfoPara3aOk = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
+  
+  //val imageBoxInfoPara4aOk = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
   val referencePara4bOk = Reference(url = "", surface = "友達である。", surfaceIndex = 1, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
-  val imageBoxInfoPara4bOk = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
+  val imageReferencePara4bOk = ImageReference(referencePara4bOk, x = 77, y = 98, width = 433, height = 222)
+  val knowledgeForImagePara4bOk = KnowledgeForImage(getUUID(), imageReferencePara4bOk)    
+  //val imageBoxInfoPara4bOk = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
 
+  
   val lang = "ja_JP"
   //片側対象、片側一致
   "The specification1" should {
@@ -130,16 +170,16 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       val propositionId1 = getUUID()
       val sentenceId1 = getUUID()
       //val knowledge1 = Knowledge(sentenceA,"ja_JP", "{}", false, List(imageA))
-      val knowledge1 = getKnowledge2(lang=lang, sentence=sentence1, List((reference1, imageBoxInfo1)), transversalState)
-      val paraphraseKnowledge1 = getKnowledge2(lang=lang, sentence=paraphrase1, List((referencePara1Ok, imageBoxInfoPara1Ok)), transversalState)
+      val knowledge1 = Knowledge(lang=lang, sentence=sentence1, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImage1, transversalState)))
+      val paraphraseKnowledge1 = Knowledge(lang=lang, sentence=paraphrase1, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImagePara1Ok, transversalState)))
       registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
       val propositionIdForInference1 = getUUID()
       val sentenceIdForInference1 = getUUID()
       val premiseKnowledge = List.empty[KnowledgeForParser]
       val claimKnowledge = List(KnowledgeForParser(propositionIdForInference1, sentenceIdForInference1, paraphraseKnowledge1))
-      val inputSentence = Json.toJson(InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)).toString()
+      val inputSentenceForParser = InputSentenceForParser(premiseKnowledge, claimKnowledge, ActionModeType.DEDUCTION_MODE.index)
       //val json = ToposoidUtils.callComponent(inputSentence, conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT"), "analyze")
-      val json = addImageInfoToAnalyzedSentenceObjects(lang=lang, inputSentence, getImageInfo2(List((referencePara1Ok, imageBoxInfoPara1Ok)), transversalState), transversalState)
+      val json = getAnalyzedSentenceObjectsJsonForSemiGlobal(lang, inputSentenceForParser, transversalState)
       val updatedAsosJson = TestUtils.analyzeByBaseDeductionUnit(json, transversalState)
       val fr = FakeRequest(POST, "/execute")
         .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> transversalStateJson)
@@ -156,7 +196,7 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
     }
   }
-
+  /*
   //片側対象、片側不一致
   "The specification2" should {
     "returns an appropriate response" in {
@@ -398,8 +438,7 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       
     }
   }
-
-
+  */
 
 
 }

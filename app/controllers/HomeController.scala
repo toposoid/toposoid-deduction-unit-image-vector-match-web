@@ -46,6 +46,7 @@ import com.ideal.linked.toposoid.protocol.model.base.MatchedKnowledgeNode
 import com.ideal.linked.toposoid.knowledgebase.model.KnowledgeFeatureReference
 import com.ideal.linked.common.DeploymentConverter.conf
 import com.ideal.linked.toposoid.common.DeductionQuery
+import com.ideal.linked.toposoid.knowledgebase.image.model.SingleImage
 
 
 class HomeController @Inject()(val controllerComponents: ControllerComponents) extends BaseController with LazyLogging {
@@ -233,7 +234,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
     //There may be multiple image nodes, so check them all
     node.localContext.knowledgeFeatureReferences.foldLeft(Map.empty[String, Float]){(acc, x) => {
 
-      val vector = FeatureVectorizer.getImageVector(x.url, transversalState)
+      val vector = FeatureVectorizer.getImageVector(SingleImage(url=x.url), transversalState)
       val json: String = Json.toJson(SingleFeatureVectorForSearch(vector = vector.vector, num = conf.getString("TOPOSOID_IMAGE_VECTORDB_SEARCH_NUM_MAX").toInt)).toString()
       val featureVectorSearchResultJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "search", transversalState)
       val result:FeatureVectorSearchResult = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]

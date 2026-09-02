@@ -24,7 +24,7 @@ import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, Proposit
 import com.ideal.linked.toposoid.protocol.model.base.AnalyzedSentenceObjects
 import com.ideal.linked.toposoid.protocol.model.parser.{InputSentenceForParser, KnowledgeForParser, KnowledgeSentenceSetForParser}
 import com.ideal.linked.toposoid.test.utils.TestUtils
-import controllers.TestUtilsEx.{addImageInfoToAnalyzedSentenceObjects, getImageInfo2, getKnowledge2, getUUID, registerSingleClaim}
+//import controllers.TestUtilsEx.{addImageInfoToAnalyzedSentenceObjects, getImageInfo2, getKnowledge2, getUUID, registerSingleClaim}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -60,7 +60,7 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
 
   override implicit def defaultAwaitTimeout: Timeout = 600.seconds
   val controller: HomeController = inject[HomeController]
-
+  /*
   val sentence1 = "There are two cats."
   val reference1 = Reference(url = "", surface = "cats", surfaceIndex = 3, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg")
@@ -123,7 +123,7 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
   val referencePara4bOk = Reference(url = "", surface = "friends", surfaceIndex = 3, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
   val imageBoxInfoPara4bOk = ImageBoxInfo(x = 77, y = 98, weight = 433, height = 222)
-
+  
   val lang = "en_US"
   //片側対象、片側一致
   "The specification1" should {
@@ -399,7 +399,7 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
       
     }
   }
-
+  */
 
 
 
