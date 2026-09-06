@@ -369,7 +369,7 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
       val propositionId1 = getUUID()
       val sentenceId1 = getUUID()
       //val knowledge1 = Knowledge(sentenceA,"ja_JP", "{}", false, List(imageA))
-      val knowledge1 = Knowledge(lang=lang, sentence=sentence3, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImage3a, transversalState), uploadImage(knowledgeForImage2b, transversalState)))
+      val knowledge1 = Knowledge(lang=lang, sentence=sentence3, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImage3a, transversalState), uploadImage(knowledgeForImage3b, transversalState)))
       val paraphraseKnowledge1 = Knowledge(lang=lang, sentence=paraphrase4, extentInfoJson = "{}", knowledgeForImages=List(uploadImage(knowledgeForImagePara4aOk, transversalState), uploadImage(knowledgeForImagePara4bOk, transversalState)))
       registerSingleClaim(KnowledgeForParser(propositionId1, sentenceId1, knowledge1), transversalState)
       
