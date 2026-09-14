@@ -233,12 +233,17 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents) e
   private def getSimilarImage(node:KnowledgeBaseNode,sentenceType:Int, transversalState:TransversalState):Map[String, Float] = {
     //There may be multiple image nodes, so check them all
     node.localContext.knowledgeFeatureReferences.foldLeft(Map.empty[String, Float]){(acc, x) => {
+      x.featureType match {
+        case FeatureType.IMAGE.index => {
+          val vector = FeatureVectorizer.getImageVector(SingleImage(url=x.url), transversalState)
+          val json: String = Json.toJson(SingleFeatureVectorForSearch(vector = vector.vector, num = conf.getString("TOPOSOID_IMAGE_VECTORDB_SEARCH_NUM_MAX").toInt)).toString()
+          val featureVectorSearchResultJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "search", transversalState)
+          val result:FeatureVectorSearchResult = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
+          acc ++ result.ids.zip(result.similarities).filter(y => y._1.sentenceType == sentenceType).map( z => ( z._1.featureId  -> z._2))
+        }
+        case _ => acc
+      }
 
-      val vector = FeatureVectorizer.getImageVector(SingleImage(url=x.url), transversalState)
-      val json: String = Json.toJson(SingleFeatureVectorForSearch(vector = vector.vector, num = conf.getString("TOPOSOID_IMAGE_VECTORDB_SEARCH_NUM_MAX").toInt)).toString()
-      val featureVectorSearchResultJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "search", transversalState)
-      val result:FeatureVectorSearchResult = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
-      acc ++ result.ids.zip(result.similarities).filter(y => y._1.sentenceType == sentenceType).map( z => ( z._1.featureId  -> z._2))
     }}
   }
 }
