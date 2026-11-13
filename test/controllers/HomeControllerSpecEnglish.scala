@@ -151,7 +151,7 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
   val imageReferencePara4aOk = ImageReference(referencePara4aOk, x = 11, y = 11, width = 466, height = 310)
   val knowledgeForImagePara4aOk = KnowledgeForImage(getUUID(), imageReferencePara4aOk)    
   //val imageBoxInfoPara4aOk = ImageBoxInfo(x =11 , y = 11, weight = 466, height = 310)
-  val referencePara4bOk = Reference(url = "", surface = "friends", surfaceIndex = 3, isWholeSentence = false,
+  val referencePara4bOk = Reference(url = "", surface = "friends", surfaceIndex = 2, isWholeSentence = false,
     originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg")
   val imageReferencePara4bOk = ImageReference(referencePara4bOk, x = 77, y = 98, width = 433, height = 222)
   val knowledgeForImagePara4bOk = KnowledgeForImage(getUUID(), imageReferencePara4bOk)      
@@ -389,9 +389,9 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
       contentType(result) mustBe Some("application/json")
       val jsonResult: String = contentAsJson(result).toString()
       val verifyingEdgesList: List[VerifyingEdges] = Json.parse(jsonResult).as[List[VerifyingEdges]]
-      assert(verifyingEdgesList.map(x => x.coveredPropositionEdges.size).sum == 0)
+      assert(verifyingEdgesList.map(x => x.coveredPropositionEdges.size).sum == 2)
 
-      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
+      TestUtils.checkMatchedBothSide(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=2)   
       TestUtils.checkMatchedOneSide(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=0)   
       TestUtils.checkNoMatch(json = json, sentenceId = sentenceIdForInference1, verifyingEdgesList=verifyingEdgesList, correctSize=0)  
       
